@@ -8,6 +8,8 @@
 import Foundation
 import EventKit
 import ArgumentParser
+import CoreLocation
+import CoreGraphics
 
 // MARK: - Shared Utilities
 
@@ -165,7 +167,7 @@ struct DateParser {
 struct ReminderCLI: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "A powerful CLI for Apple Reminders using EventKit",
-        version: "2.0.0",
+        version: "3.0.0",
         subcommands: [
             List.self, 
             Lists.self, 
@@ -177,7 +179,18 @@ struct ReminderCLI: ParsableCommand {
             Search.self, 
             Stats.self,
             AddAlarm.self,
-            RemoveAlarm.self
+            RemoveAlarm.self,
+            CreateList.self,
+            DeleteList.self,
+            RenameList.self,
+            AddRecurrence.self,
+            RemoveRecurrence.self,
+            AddLocation.self,
+            RemoveLocation.self,
+            AddSubtask.self,
+            ListSubtasks.self,
+            AddTag.self,
+            ListTags.self
         ]
     )
     
@@ -631,7 +644,14 @@ struct ReminderCLI: ParsableCommand {
                 print("Alarms: \(reminder.alarms?.count ?? 0) 🔔")
                 if let alarms = reminder.alarms {
                     for (index, alarm) in alarms.enumerated() {
-                        if let absoluteDate = alarm.absoluteDate {
+                        if let location = alarm.structuredLocation {
+                            let proximityDesc = alarm.proximity == .enter ? "arriving at" : "leaving"
+                            print("  \(index + 1). Location: \(proximityDesc) \(location.title ?? "Unknown") 📍")
+                            let radius = location.radius
+                            if radius > 0 {
+                                print("      Radius: \(Int(radius))m")
+                            }
+                        } else if let absoluteDate = alarm.absoluteDate {
                             let formatter = DateFormatter()
                             formatter.dateStyle = .short
                             formatter.timeStyle = .short
@@ -642,6 +662,30 @@ struct ReminderCLI: ParsableCommand {
                             print("  \(index + 1). \(minutes) minutes before")
                         }
                     }
+                }
+            }
+            
+            if let recurrenceRules = reminder.recurrenceRules, !recurrenceRules.isEmpty {
+                print("Recurrence: 🔁")
+                for (index, rule) in recurrenceRules.enumerated() {
+                    let freqDesc = getFrequencyDescription(rule.frequency)
+                    var ruleDesc = "  \(index + 1). \(freqDesc)"
+                    if rule.interval > 1 {
+                        ruleDesc += " (every \(rule.interval))"
+                    }
+                    if let end = rule.recurrenceEnd {
+                        if let endDate = end.endDate {
+                            let formatter = DateFormatter()
+                            formatter.dateStyle = .medium
+                            ruleDesc += " until \(formatter.string(from: endDate))"
+                        } else {
+                            let occurrenceCount = end.occurrenceCount
+                            if occurrenceCount > 0 {
+                                ruleDesc += " (\(occurrenceCount) times)"
+                            }
+                        }
+                    }
+                    print(ruleDesc)
                 }
             }
             
@@ -657,6 +701,16 @@ struct ReminderCLI: ParsableCommand {
                 formatter.dateStyle = .medium
                 formatter.timeStyle = .short
                 print("Last Modified: \(formatter.string(from: modifiedDate))")
+            }
+        }
+        
+        private func getFrequencyDescription(_ frequency: EKRecurrenceFrequency) -> String {
+            switch frequency {
+            case .daily: return "Daily"
+            case .weekly: return "Weekly"
+            case .monthly: return "Monthly"
+            case .yearly: return "Yearly"
+            @unknown default: return "Unknown"
             }
         }
     }
@@ -772,6 +826,9 @@ struct ReminderCLI: ParsableCommand {
         
         @Flag(name: .long, help: "Show only uncompleted reminders")
         var uncompleted = false
+        
+        @Option(name: .long, help: "Filter by tag (e.g., #work)")
+        var tag: String?
 
         func run() throws {
             let store = ReminderStore()
@@ -835,6 +892,13 @@ struct ReminderCLI: ParsableCommand {
                 let now = Date()
                 filtered = filtered.filter {
                     !$0.isCompleted && $0.dueDateComponents?.date ?? .distantFuture < now
+                }
+            }
+            
+            if let tagFilter = tag {
+                let tagText = tagFilter.hasPrefix("#") ? tagFilter : "#\(tagFilter)"
+                filtered = filtered.filter {
+                    $0.notes?.contains(tagText) ?? false
                 }
             }
             
@@ -1110,8 +1174,615 @@ struct ReminderCLI: ParsableCommand {
             }
         }
     }
+    
+    // MARK: - CreateList Command
+    
+    struct CreateList: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: "Create a new reminder list")
+
+        @Argument(help: "Name of the new list")
+        var name: String
+        
+        @Option(name: .long, help: "Color (hex format like #FF0000)")
+        var color: String?
+
+        func run() throws {
+            let store = ReminderStore()
+            
+            guard store.requestAccess() else {
+                print("Error: No access to Reminders. Please grant permission in System Preferences.")
+                return
+            }
+            
+            // Find available source for reminders
+            guard let source = store.eventStore.sources.first(where: { 
+                $0.sourceType == .local || $0.sourceType == .calDAV 
+            }) else {
+                print("Error: No available source for creating reminder lists.")
+                return
+            }
+            
+            let newCalendar = EKCalendar(for: .reminder, eventStore: store.eventStore)
+            newCalendar.title = name
+            newCalendar.source = source
+            
+            // Set color if provided
+            if let colorHex = color {
+                if let cgColor = hexToCGColor(colorHex) {
+                    newCalendar.cgColor = cgColor
+                } else {
+                    print("⚠️  Invalid color format. Using default color.")
+                }
+            }
+            
+            do {
+                try store.eventStore.saveCalendar(newCalendar, commit: true)
+                print("✅ Created new list: \(name)")
+            } catch {
+                print("Error creating list: \(error)")
+            }
+        }
+        
+        private func hexToCGColor(_ hex: String) -> CGColor? {
+            var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+            hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+            
+            var rgb: UInt64 = 0
+            guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else { return nil }
+            
+            let r = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+            let g = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+            let b = CGFloat(rgb & 0x0000FF) / 255.0
+            
+            return CGColor(red: r, green: g, blue: b, alpha: 1.0)
+        }
+    }
+    
+    // MARK: - DeleteList Command
+    
+    struct DeleteList: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: "Delete a reminder list")
+
+        @Argument(help: "Name of the list to delete")
+        var name: String
+        
+        @Flag(name: .long, help: "Skip confirmation prompt")
+        var force = false
+
+        func run() throws {
+            let store = ReminderStore()
+            
+            guard store.requestAccess() else {
+                print("Error: No access to Reminders. Please grant permission in System Preferences.")
+                return
+            }
+            
+            guard let calendar = store.findCalendar(named: name) else {
+                print("❌ List not found: \(name)")
+                return
+            }
+            
+            // Count reminders in the list
+            let semaphore = DispatchSemaphore(value: 0)
+            var reminderCount = 0
+            
+            store.fetchReminders(in: [calendar]) { reminders in
+                reminderCount = reminders.count
+                semaphore.signal()
+            }
+            semaphore.wait()
+            
+            if !force {
+                print("⚠️  This will delete the list '\(calendar.title)' and all \(reminderCount) reminder(s) in it.")
+                print("Are you sure? (yes/no): ", terminator: "")
+                
+                guard let response = readLine()?.lowercased(), response == "yes" || response == "y" else {
+                    print("Cancelled.")
+                    return
+                }
+            }
+            
+            do {
+                try store.eventStore.removeCalendar(calendar, commit: true)
+                print("🗑️  Deleted list: \(calendar.title) (\(reminderCount) reminder(s) removed)")
+            } catch {
+                print("Error deleting list: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - RenameList Command
+    
+    struct RenameList: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: "Rename a reminder list")
+
+        @Argument(help: "Current list name")
+        var currentName: String
+        
+        @Argument(help: "New list name")
+        var newName: String
+
+        func run() throws {
+            let store = ReminderStore()
+            
+            guard store.requestAccess() else {
+                print("Error: No access to Reminders. Please grant permission in System Preferences.")
+                return
+            }
+            
+            guard let calendar = store.findCalendar(named: currentName) else {
+                print("❌ List not found: \(currentName)")
+                return
+            }
+            
+            let oldName = calendar.title
+            calendar.title = newName
+            
+            do {
+                try store.eventStore.saveCalendar(calendar, commit: true)
+                print("✅ Renamed list from '\(oldName)' to '\(newName)'")
+            } catch {
+                print("Error renaming list: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - AddRecurrence Command
+    
+    struct AddRecurrence: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: "Add recurrence rule to a reminder")
+
+        @Argument(help: "Reminder name")
+        var name: String
+        
+        @Option(name: .shortAndLong, help: "List name")
+        var listName: String?
+        
+        @Option(name: .long, help: "Frequency (daily/weekly/monthly/yearly)")
+        var frequency: String
+        
+        @Option(name: .long, help: "Interval (e.g., 1 for every day, 2 for every other day)")
+        var interval: Int?
+        
+        @Option(name: .long, help: "End date (YYYY-MM-DD) or 'never'")
+        var until: String?
+
+        func run() throws {
+            let store = ReminderStore()
+            
+            guard store.requestAccess() else {
+                print("Error: No access to Reminders. Please grant permission in System Preferences.")
+                return
+            }
+
+            guard let reminder = store.findReminder(named: name, in: listName) else {
+                print("❌ Reminder not found: \(name)")
+                return
+            }
+            
+            let freq: EKRecurrenceFrequency
+            switch frequency.lowercased() {
+            case "daily", "day":
+                freq = .daily
+            case "weekly", "week":
+                freq = .weekly
+            case "monthly", "month":
+                freq = .monthly
+            case "yearly", "year":
+                freq = .yearly
+            default:
+                print("❌ Invalid frequency. Use: daily, weekly, monthly, or yearly")
+                return
+            }
+            
+            let recurrenceInterval = interval ?? 1
+            var recurrenceEnd: EKRecurrenceEnd?
+            
+            if let untilString = until, untilString.lowercased() != "never" {
+                if let endDate = DateParser.parse(untilString) {
+                    recurrenceEnd = EKRecurrenceEnd(end: endDate)
+                } else {
+                    print("❌ Invalid end date format")
+                    return
+                }
+            }
+            
+            let recurrenceRule = EKRecurrenceRule(
+                recurrenceWith: freq,
+                interval: recurrenceInterval,
+                end: recurrenceEnd
+            )
+            
+            reminder.addRecurrenceRule(recurrenceRule)
+            
+            do {
+                try store.eventStore.save(reminder, commit: true)
+                let endDesc = recurrenceEnd != nil ? " until \(until!)" : " (no end date)"
+                print("✅ Added \(frequency) recurrence to: \(reminder.title ?? "Untitled")\(endDesc)")
+            } catch {
+                print("Error adding recurrence: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - RemoveRecurrence Command
+    
+    struct RemoveRecurrence: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: "Remove all recurrence rules from a reminder")
+
+        @Argument(help: "Reminder name")
+        var name: String
+
+        @Option(name: .shortAndLong, help: "List name")
+        var listName: String?
+
+        func run() throws {
+            let store = ReminderStore()
+            
+            guard store.requestAccess() else {
+                print("Error: No access to Reminders. Please grant permission in System Preferences.")
+                return
+            }
+
+            guard let reminder = store.findReminder(named: name, in: listName) else {
+                print("❌ Reminder not found: \(name)")
+                return
+            }
+            
+            guard let rules = reminder.recurrenceRules, !rules.isEmpty else {
+                print("ℹ️  Reminder has no recurrence rules: \(reminder.title ?? "Untitled")")
+                return
+            }
+            
+            let count = rules.count
+            
+            for rule in rules {
+                reminder.removeRecurrenceRule(rule)
+            }
+            
+            do {
+                try store.eventStore.save(reminder, commit: true)
+                print("✅ Removed \(count) recurrence rule(s) from: \(reminder.title ?? "Untitled")")
+            } catch {
+                print("Error removing recurrence: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - AddLocation Command
+    
+    struct AddLocation: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: "Add location-based alert to a reminder")
+
+        @Argument(help: "Reminder name")
+        var name: String
+        
+        @Option(name: .shortAndLong, help: "List name")
+        var listName: String?
+        
+        @Option(name: .long, help: "Location title/address")
+        var location: String
+        
+        @Option(name: .long, help: "Latitude")
+        var latitude: Double?
+        
+        @Option(name: .long, help: "Longitude")
+        var longitude: Double?
+        
+        @Option(name: .long, help: "Radius in meters (default: 100)")
+        var radius: Double?
+        
+        @Option(name: .long, help: "Trigger (arriving/leaving, default: arriving)")
+        var trigger: String?
+
+        func run() throws {
+            let store = ReminderStore()
+            
+            guard store.requestAccess() else {
+                print("Error: No access to Reminders. Please grant permission in System Preferences.")
+                return
+            }
+
+            guard let reminder = store.findReminder(named: name, in: listName) else {
+                print("❌ Reminder not found: \(name)")
+                return
+            }
+            
+            let structuredLocation = EKStructuredLocation(title: location)
+            
+            if let lat = latitude, let lon = longitude {
+                structuredLocation.geoLocation = CLLocation(latitude: lat, longitude: lon)
+                structuredLocation.radius = radius ?? 100.0
+            }
+            
+            let proximity: EKAlarmProximity
+            if let triggerType = trigger?.lowercased() {
+                proximity = triggerType == "leaving" ? .leave : .enter
+            } else {
+                proximity = .enter
+            }
+            
+            let alarm = EKAlarm()
+            alarm.structuredLocation = structuredLocation
+            alarm.proximity = proximity
+            
+            reminder.addAlarm(alarm)
+            
+            do {
+                try store.eventStore.save(reminder, commit: true)
+                let triggerDesc = proximity == .enter ? "arriving at" : "leaving"
+                print("✅ Added location alert (\(triggerDesc)) to: \(reminder.title ?? "Untitled")")
+                print("   Location: \(location)")
+            } catch {
+                print("Error adding location: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - RemoveLocation Command
+    
+    struct RemoveLocation: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: "Remove location-based alarms from a reminder")
+
+        @Argument(help: "Reminder name")
+        var name: String
+
+        @Option(name: .shortAndLong, help: "List name")
+        var listName: String?
+
+        func run() throws {
+            let store = ReminderStore()
+            
+            guard store.requestAccess() else {
+                print("Error: No access to Reminders. Please grant permission in System Preferences.")
+                return
+            }
+
+            guard let reminder = store.findReminder(named: name, in: listName) else {
+                print("❌ Reminder not found: \(name)")
+                return
+            }
+            
+            guard let alarms = reminder.alarms else {
+                print("ℹ️  Reminder has no alarms: \(reminder.title ?? "Untitled")")
+                return
+            }
+            
+            let locationAlarms = alarms.filter { $0.structuredLocation != nil }
+            
+            guard !locationAlarms.isEmpty else {
+                print("ℹ️  Reminder has no location-based alarms: \(reminder.title ?? "Untitled")")
+                return
+            }
+            
+            for alarm in locationAlarms {
+                reminder.removeAlarm(alarm)
+            }
+            
+            do {
+                try store.eventStore.save(reminder, commit: true)
+                print("✅ Removed \(locationAlarms.count) location-based alarm(s) from: \(reminder.title ?? "Untitled")")
+            } catch {
+                print("Error removing location alarms: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - AddSubtask Command
+    
+    struct AddSubtask: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: "Add a subtask to a reminder (stored in notes)")
+
+        @Argument(help: "Parent reminder name")
+        var parentName: String
+        
+        @Argument(help: "Subtask description")
+        var subtask: String
+        
+        @Option(name: .shortAndLong, help: "List name")
+        var listName: String?
+
+        func run() throws {
+            let store = ReminderStore()
+            
+            guard store.requestAccess() else {
+                print("Error: No access to Reminders. Please grant permission in System Preferences.")
+                return
+            }
+
+            guard let reminder = store.findReminder(named: parentName, in: listName) else {
+                print("❌ Reminder not found: \(parentName)")
+                return
+            }
+            
+            let subtaskMarker = "SUBTASKS:"
+            let subtaskEntry = "☐ \(subtask)"
+            
+            var currentNotes = reminder.notes ?? ""
+            
+            if currentNotes.contains(subtaskMarker) {
+                // Append to existing subtasks
+                currentNotes += "\n\(subtaskEntry)"
+            } else {
+                // Create new subtasks section
+                if !currentNotes.isEmpty {
+                    currentNotes += "\n\n"
+                }
+                currentNotes += "\(subtaskMarker)\n\(subtaskEntry)"
+            }
+            
+            reminder.notes = currentNotes
+            
+            do {
+                try store.eventStore.save(reminder, commit: true)
+                print("✅ Added subtask to: \(reminder.title ?? "Untitled")")
+                print("   Subtask: \(subtask)")
+            } catch {
+                print("Error adding subtask: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - ListSubtasks Command
+    
+    struct ListSubtasks: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: "List all subtasks of a reminder")
+
+        @Argument(help: "Reminder name")
+        var name: String
+
+        @Option(name: .shortAndLong, help: "List name")
+        var listName: String?
+
+        func run() throws {
+            let store = ReminderStore()
+            
+            guard store.requestAccess() else {
+                print("Error: No access to Reminders. Please grant permission in System Preferences.")
+                return
+            }
+
+            guard let reminder = store.findReminder(named: name, in: listName) else {
+                print("❌ Reminder not found: \(name)")
+                return
+            }
+            
+            guard let notes = reminder.notes, notes.contains("SUBTASKS:") else {
+                print("ℹ️  No subtasks found for: \(reminder.title ?? "Untitled")")
+                return
+            }
+            
+            print("=== Subtasks for: \(reminder.title ?? "Untitled") ===")
+            
+            let lines = notes.components(separatedBy: "\n")
+            var inSubtaskSection = false
+            
+            for line in lines {
+                if line.contains("SUBTASKS:") {
+                    inSubtaskSection = true
+                    continue
+                }
+                
+                if inSubtaskSection && (line.hasPrefix("☐") || line.hasPrefix("☑")) {
+                    print("  \(line)")
+                }
+            }
+        }
+    }
+    
+    // MARK: - AddTag Command
+    
+    struct AddTag: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: "Add a tag to a reminder (stored in notes as #tag)")
+
+        @Argument(help: "Reminder name")
+        var name: String
+        
+        @Argument(help: "Tag name (without #)")
+        var tag: String
+        
+        @Option(name: .shortAndLong, help: "List name")
+        var listName: String?
+
+        func run() throws {
+            let store = ReminderStore()
+            
+            guard store.requestAccess() else {
+                print("Error: No access to Reminders. Please grant permission in System Preferences.")
+                return
+            }
+
+            guard let reminder = store.findReminder(named: name, in: listName) else {
+                print("❌ Reminder not found: \(name)")
+                return
+            }
+            
+            let tagText = tag.hasPrefix("#") ? tag : "#\(tag)"
+            var currentNotes = reminder.notes ?? ""
+            
+            // Check if tag already exists
+            if currentNotes.contains(tagText) {
+                print("ℹ️  Tag already exists: \(tagText)")
+                return
+            }
+            
+            if !currentNotes.isEmpty && !currentNotes.hasSuffix("\n") {
+                currentNotes += " "
+            }
+            
+            currentNotes += tagText
+            reminder.notes = currentNotes
+            
+            do {
+                try store.eventStore.save(reminder, commit: true)
+                print("✅ Added tag \(tagText) to: \(reminder.title ?? "Untitled")")
+            } catch {
+                print("Error adding tag: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - ListTags Command
+    
+    struct ListTags: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: "List all tags used in reminders")
+
+        @Option(name: .shortAndLong, help: "Filter by list name")
+        var listName: String?
+
+        func run() throws {
+            let store = ReminderStore()
+            
+            guard store.requestAccess() else {
+                print("Error: No access to Reminders. Please grant permission in System Preferences.")
+                return
+            }
+
+            let calendars = listName != nil ?
+                store.getCalendars().filter { $0.title.localizedCaseInsensitiveContains(listName!) } :
+                store.getCalendars()
+            
+            var allReminders: [EKReminder] = []
+            
+            for calendar in calendars {
+                let semaphore = DispatchSemaphore(value: 0)
+                store.fetchReminders(in: [calendar]) { reminders in
+                    allReminders.append(contentsOf: reminders)
+                    semaphore.signal()
+                }
+                semaphore.wait()
+            }
+            
+            var tagCounts: [String: Int] = [:]
+            
+            for reminder in allReminders {
+                guard let notes = reminder.notes else { continue }
+                
+                // Extract hashtags using regex-like pattern
+                let words = notes.components(separatedBy: CharacterSet.whitespacesAndNewlines)
+                for word in words {
+                    if word.hasPrefix("#") && word.count > 1 {
+                        let tag = word.trimmingCharacters(in: CharacterSet.punctuationCharacters.subtracting(CharacterSet(charactersIn: "#")))
+                        tagCounts[tag, default: 0] += 1
+                    }
+                }
+            }
+            
+            if tagCounts.isEmpty {
+                print("No tags found.")
+                return
+            }
+            
+            print("=== Tags ===")
+            let sortedTags = tagCounts.sorted { $0.value > $1.value }
+            for (tag, count) in sortedTags {
+                print("  \(tag) (\(count) reminder\(count == 1 ? "" : "s"))")
+            }
+        }
+    }
 }
 
 // Run the CLI
 ReminderCLI.main()
+
 

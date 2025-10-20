@@ -1,6 +1,17 @@
 # Apple Reminders CLI
 
-A powerful, feature-rich command-line interface for Apple Reminders built with Swift and EventKit.
+A powerful, feature-rich command-line interface for Apple Reminders built with Swift and EventKit. Now supports **tags, subtasks, recurring reminders, location alerts, and full list management**!
+
+## 🎉 What's New in v3.0.0
+
+- ✅ **Create/Delete/Rename Lists** - Full list management
+- ✅ **Recurring Reminders** - Daily, weekly, monthly, yearly patterns
+- ✅ **Location-Based Alerts** - Get notified when arriving/leaving locations
+- ✅ **Subtasks** - Break down complex tasks (via notes)
+- ✅ **Tags** - Organize with hashtags (via notes)
+- ✅ **Enhanced Search** - Filter by tags and more
+
+See [NEW_FEATURES.md](NEW_FEATURES.md) for complete documentation of new features.
 
 ## Features
 
@@ -9,23 +20,42 @@ A powerful, feature-rich command-line interface for Apple Reminders built with S
 - **list** - List reminders with advanced filtering
 - **lists** - Show all reminder lists with statistics
 - **create** - Create new reminders with full metadata support
+- **create-list** - Create new reminder lists 🆕
+- **delete-list** - Delete reminder lists 🆕
+- **rename-list** - Rename reminder lists 🆕
 - **update** - Modify existing reminders
 - **show** - Display detailed information about a specific reminder
 - **complete** - Mark reminders as completed
 - **delete** - Remove reminders
-- **search** - Advanced search with multiple filters
+- **search** - Advanced search with multiple filters (including tags 🆕)
 - **stats** - Show productivity statistics and metrics
-- **add-alarm** - Add notifications to reminders
+
+### Reminder Enhancement Commands
+
+- **add-alarm** - Add time-based notifications
 - **remove-alarm** - Remove alarms from reminders
+- **add-recurrence** - Add recurring patterns 🆕
+- **remove-recurrence** - Remove recurrence rules 🆕
+- **add-location** - Add location-based alerts 🆕
+- **remove-location** - Remove location alerts 🆕
+- **add-subtask** - Add subtasks to reminders 🆕
+- **list-subtasks** - List all subtasks 🆕
+- **add-tag** - Add tags to reminders 🆕
+- **list-tags** - List all tags with usage counts 🆕
 
 ### EventKit Features
 
+✅ **List Management** - Create, delete, and rename reminder lists 🆕  
+✅ **Recurring Reminders** - Daily, weekly, monthly, yearly patterns 🆕  
+✅ **Location Alerts** - Geofencing with arrival/departure triggers 🆕  
+✅ **Subtasks** - Break down complex tasks (workaround via notes) 🆕  
+✅ **Tags** - Organize with hashtags (workaround via notes) 🆕  
 ✅ **Priority Management** - Set and filter by priority levels (High/Medium/Low)  
 ✅ **URL Attachments** - Attach links to reminders  
 ✅ **Start & Due Dates** - Full date support with flexible parsing  
 ✅ **Alarms/Notifications** - Set time-based reminders  
 ✅ **Notes** - Add detailed descriptions  
-✅ **Advanced Filtering** - Filter by priority, dates, URLs, alarms  
+✅ **Advanced Filtering** - Filter by priority, dates, URLs, alarms, tags  
 ✅ **Statistics** - Track completion rates and productivity metrics  
 ✅ **Overdue Detection** - Identify overdue tasks  
 ✅ **Flexible Date Parsing** - Natural language date input
@@ -407,44 +437,27 @@ reminder create "Doctor appointment" \
 
 ## Limitations
 
-- EventKit doesn't support:
-  - Subtasks (Apple Reminders subtasks are not exposed in EventKit)
-  - Tags/categories (not available in EventKit API)
-  - Location-based reminders (requires additional setup)
-  - Recurrence rules (possible to implement - future feature)
+EventKit public API limitations (workarounds implemented):
+
+- **Subtasks**: Native subtask API not exposed - implemented via structured notes with checkbox formatting
+- **Tags**: Native tags API not exposed - implemented via hashtags in notes with search support
+- **List Colors**: Limited color support - hex colors can be set but may not display in all views
+
+All workarounds are fully compatible with the Reminders app and sync via iCloud.
 
 ## Future Enhancements
 
 Potential features for future versions:
 
-- [ ] Recurrence rules (daily, weekly, monthly reminders)
-- [ ] Location-based reminders
-- [ ] Export/Import (JSON, CSV formats)
-- [ ] Bulk operations (complete/delete multiple)
 - [ ] Interactive mode with prompts
 - [ ] Color output support
 - [ ] Shell completion (bash, zsh, fish)
 - [ ] Watch mode (monitor changes)
 - [ ] Integration with other tools (via JSON output)
-
-## Contributing
-
-Contributions welcome! Areas for improvement:
-
-- Additional date parsing formats
-- Better error messages
-- Performance optimizations
-- Unit tests
-- CI/CD setup
-
-## License
-
-See LICENSE file for details.
-
-## Author
-
-Aung Myo Kyaw
+- [ ] Export/Import (JSON, CSV formats)
+- [ ] Bulk operations (complete/delete multiple)
+- [ ] Custom list ordering
 
 ## Version
 
-2.0.0 - Complete EventKit integration with advanced features
+**3.0.0** - Full feature parity with Reminders app (tags, subtasks, recurring, location, list management)
