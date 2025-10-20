@@ -77,6 +77,7 @@
 			);
 			name = "apple-reminders-cli";
 			packageProductDependencies = (
+				D67B16A12EA6900000B27FED /* ArgumentParser */,
 			);
 			productName = "apple-reminders-cli";
 			productReference = D67B16962EA6873200B27FED /* apple-reminders-cli */;
@@ -106,6 +107,9 @@
 			);
 			mainGroup = D67B168D2EA6873200B27FED;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D67B16A02EA6900000B27FED /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D67B16972EA6873200B27FED /* Products */;
 			projectDirPath = "";
@@ -291,6 +295,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D67B16A02EA6900000B27FED /* XCRemoteSwiftPackageReference "swift-argument-parser" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-argument-parser.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D67B16A12EA6900000B27FED /* ArgumentParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D67B16A02EA6900000B27FED /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
+			productName = ArgumentParser;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D67B168E2EA6873200B27FED /* Project object */;
 }
