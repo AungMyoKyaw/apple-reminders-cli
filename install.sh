@@ -43,7 +43,7 @@ echo "✅ Build successful!"
 
 # Find the built executable
 EXECUTABLE=$(find ~/Library/Developer/Xcode/DerivedData/apple-reminders-cli-* \
-    -name "apple-reminders-cli" -type f -perm +111 2>/dev/null | grep Release | head -n1)
+    -name "reminder" -type f -perm +111 2>/dev/null | grep Release | head -n1)
 
 if [ -z "$EXECUTABLE" ]; then
     echo "❌ Error: Could not find built executable"

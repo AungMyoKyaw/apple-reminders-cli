@@ -166,17 +166,18 @@ struct DateParser {
 
 struct ReminderCLI: ParsableCommand {
     static let configuration = CommandConfiguration(
+        commandName: "reminder",
         abstract: "A powerful CLI for Apple Reminders using EventKit",
         version: "3.0.0",
         subcommands: [
-            List.self, 
-            Lists.self, 
-            Create.self, 
-            Update.self, 
-            Show.self, 
-            Complete.self, 
-            Delete.self, 
-            Search.self, 
+            List.self,
+            Lists.self,
+            Create.self,
+            Update.self,
+            Show.self,
+            Complete.self,
+            Delete.self,
+            Search.self,
             Stats.self,
             AddAlarm.self,
             RemoveAlarm.self,
