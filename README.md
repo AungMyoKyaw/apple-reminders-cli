@@ -15,6 +15,18 @@ A powerful command-line interface for Apple Reminders built with Swift and Event
 
 ## Installation
 
+### Homebrew (Recommended)
+
+```bash
+# Add the tap
+brew tap AungMyoKyaw/homebrew-tap
+
+# Install the CLI
+brew install AungMyoKyaw/homebrew-tap/reminder
+```
+
+### Build from Source
+
 ```bash
 cd apple-reminders-cli
 swift build -c release
