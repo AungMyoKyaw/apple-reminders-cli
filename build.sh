@@ -50,6 +50,16 @@ fi
 cp "$BINARY_PATH" ./reminder
 echo "📋 Binary copied to current directory"
 
+# Generate man page
+echo "📚 Generating man page..."
+if [ -f "./generate-man.sh" ]; then
+    chmod +x ./generate-man.sh
+    ./generate-man.sh
+    echo "✅ Man page generated: reminder.1"
+else
+    echo "⚠️  Warning: generate-man.sh not found, skipping man page generation"
+fi
+
 # Test the binary works
 echo "🧪 Testing binary..."
 if ./reminder --version > /dev/null 2>&1; then
@@ -62,10 +72,20 @@ fi
 # Create zip archive
 ARCHIVE_NAME="reminder-$VERSION.zip"
 echo "📦 Creating zip archive: $ARCHIVE_NAME"
-zip -r "$ARCHIVE_NAME" reminder
 
-# Clean up the binary from current directory (keep the zip)
-rm -f reminder
+# Add files to the archive
+zip -j "$ARCHIVE_NAME" reminder
+
+# Include man page if it exists
+if [ -f "reminder.1" ]; then
+    zip -j "$ARCHIVE_NAME" reminder.1
+    echo "📚 Man page included in archive"
+else
+    echo "⚠️  Warning: reminder.1 not found, man page not included"
+fi
+
+# Clean up the binary and man page from current directory (keep the zip)
+rm -f reminder reminder.1
 
 echo ""
 echo "✅ Build complete!"

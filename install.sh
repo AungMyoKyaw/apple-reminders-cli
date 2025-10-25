@@ -23,6 +23,20 @@ if [ ! -f "apple-reminders-cli.xcodeproj/project.pbxproj" ]; then
     exit 1
 fi
 
+# Generate man page using Swift Package Manager
+echo "📖 Generating man page from ArgumentParser..."
+if command -v swift &> /dev/null; then
+    swift package plugin generate-manual > /dev/null 2>&1
+    if [ -f ".build/plugins/GenerateManual/outputs/reminder/reminder.1" ]; then
+        cp ".build/plugins/GenerateManual/outputs/reminder/reminder.1" "reminder.1"
+        echo "✅ Man page generated!"
+    else
+        echo "⚠️  Warning: Could not generate man page automatically"
+    fi
+else
+    echo "⚠️  Warning: Swift not found, skipping automatic man page generation"
+fi
+
 echo "📦 Building project..."
 xcodebuild -project apple-reminders-cli.xcodeproj \
     -scheme apple-reminders-cli \
@@ -68,6 +82,26 @@ sudo chmod +x "$INSTALL_DIR/$INSTALL_NAME"
 
 echo "✅ Installation complete!"
 echo ""
+
+# Install man page
+echo "📖 Installing man page..."
+MAN_DIR="/usr/local/share/man/man1"
+
+if [ ! -d "$MAN_DIR" ]; then
+    echo "Creating man page directory: $MAN_DIR"
+    sudo mkdir -p "$MAN_DIR"
+fi
+
+if [ -f "reminder.1" ]; then
+    sudo cp "reminder.1" "$MAN_DIR/reminder.1"
+    sudo chmod 644 "$MAN_DIR/reminder.1"
+    echo "✅ Man page installed!"
+    echo "   Access with: man reminder"
+else
+    echo "⚠️  Warning: reminder.1 man page not found in project directory"
+fi
+
+echo ""
 echo "🎉 You can now use the CLI with the 'reminder' command"
 echo ""
 echo "Examples:"
@@ -75,7 +109,11 @@ echo "  reminder list"
 echo "  reminder create \"Buy groceries\" --due-date tomorrow"
 echo "  reminder stats"
 echo ""
-echo "📚 For full documentation, see README.md"
+echo "📚 Documentation:"
+echo "  man reminder              # Full man page"
+echo "  reminder --help           # CLI help"
+echo "  reminder help <command>   # Command-specific help"
+echo "  README.md                 # Project documentation"
 echo ""
 echo "⚠️  Note: On first run, you'll need to grant Calendar/Reminders permissions"
 echo "    Go to: System Settings → Privacy & Security → Calendars"

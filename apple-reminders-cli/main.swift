@@ -56,8 +56,14 @@ class ReminderStore {
         for calendar in calendars {
             let predicate = eventStore.predicateForReminders(in: [calendar])
             eventStore.fetchReminders(matching: predicate) { reminders in
-                if let reminder = reminders?.first(where: { 
-                    $0.title.localizedCaseInsensitiveContains(name) 
+                if let reminder = reminders?.first(where: { reminder in
+                    // First try exact match in title
+                    if reminder.title.localizedCaseInsensitiveContains(name) {
+                        return true
+                    }
+                    // Also try matching against title without tags
+                    let (cleanTitle, _) = TagParser.extractTagsFromTitle(reminder.title)
+                    return cleanTitle.localizedCaseInsensitiveContains(name)
                 }) {
                     foundReminder = reminder
                 }
@@ -162,12 +168,84 @@ struct DateParser {
     }
 }
 
+/// Tag extraction and formatting utilities
+struct TagParser {
+    /// Extracts tags from text and returns (cleanText, tags without #)
+    static func extractTags(from text: String) -> (text: String, tags: [String]) {
+        var tags: [String] = []
+        var cleanedText = text
+        
+        let words = text.components(separatedBy: .whitespacesAndNewlines)
+        
+        for word in words {
+            if word.hasPrefix("#") && word.count > 1 {
+                // Remove # and any trailing punctuation except #
+                var tag = String(word.dropFirst())  // Remove #
+                tag = tag.trimmingCharacters(in: CharacterSet.punctuationCharacters.subtracting(CharacterSet(charactersIn: "#")))
+                if !tag.isEmpty && !tags.contains(tag) {
+                    tags.append(tag)
+                    cleanedText = cleanedText.replacingOccurrences(of: word, with: "")
+                }
+            }
+        }
+        
+        // Clean up extra spaces
+        cleanedText = cleanedText.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "  +", with: " ", options: .regularExpression)
+        
+        return (text: cleanedText, tags: tags)
+    }
+    
+    /// Appends tags to a task title with proper formatting
+    static func appendTagsToTitle(_ title: String, tags: [String]) -> String {
+        guard !tags.isEmpty else { return title }
+        let tagString = tags.map { "#\($0)" }.joined(separator: " ")
+        return "\(title) \(tagString)"
+    }
+    
+    /// Extracts tags from a reminder title (returns tag names without #)
+    static func extractTagsFromTitle(_ title: String) -> (title: String, tags: [String]) {
+        var tags: [String] = []
+        var cleanTitle = title
+        
+        let words = title.components(separatedBy: .whitespacesAndNewlines)
+        
+        for word in words {
+            if word.hasPrefix("#") && word.count > 1 {
+                // Remove # and any trailing punctuation
+                var tag = String(word.dropFirst())  // Remove #
+                tag = tag.trimmingCharacters(in: CharacterSet.punctuationCharacters.subtracting(CharacterSet(charactersIn: "#")))
+                if !tag.isEmpty && !tags.contains(tag) {
+                    tags.append(tag)
+                    cleanTitle = cleanTitle.replacingOccurrences(of: word, with: "")
+                }
+            }
+        }
+        
+        cleanTitle = cleanTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "  +", with: " ", options: .regularExpression)
+        
+        return (title: cleanTitle, tags: tags)
+    }
+}
+
 // MARK: - Main CLI
 
 struct ReminderCLI: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "reminder",
         abstract: "A powerful CLI for Apple Reminders using EventKit",
+        discussion: """
+        Manage Apple Reminders from the command line with support for tags, recurring reminders, \
+        location alerts, subtasks, and more. Tags (prefixed with #) are automatically extracted \
+        from reminder names and appended to titles for full Apple Reminders compatibility.
+        
+        Examples:
+          reminder create "Buy milk #shopping #urgent" --due-date tomorrow
+          reminder search --tag work --priority high
+          reminder list --show-priority --show-dates
+          reminder add-tag "Buy milk" review
+        """,
         version: "3.0.1",
         subcommands: [
             List.self,
@@ -198,7 +276,10 @@ struct ReminderCLI: ParsableCommand {
     // MARK: - List Command
     
     struct List: ParsableCommand {
-        static let configuration = CommandConfiguration(abstract: "List reminders")
+        static let configuration = CommandConfiguration(
+            abstract: "List reminders",
+            discussion: "Display reminders from one or more lists with optional filters. Tags are shown in reminder titles (prefixed with #)."
+        )
 
         @Option(name: .shortAndLong, help: "Specific list to show")
         var listName: String?
@@ -387,9 +468,12 @@ struct ReminderCLI: ParsableCommand {
     // MARK: - Create Command
     
     struct Create: ParsableCommand {
-        static let configuration = CommandConfiguration(abstract: "Create a new reminder")
+        static let configuration = CommandConfiguration(
+            abstract: "Create a new reminder",
+            discussion: "Create a new reminder with optional tags, date, priority, notes, and URL. Tags (prefixed with #) are extracted from the reminder name and appended to the title. Tags are automatically deduplicated and cleaned of punctuation."
+        )
 
-        @Argument(help: "Reminder name")
+        @Argument(help: "Reminder name (tags can be included with #tag format, e.g., 'Buy milk #shopping #urgent')")
         var name: String
 
         @Option(name: .shortAndLong, help: "List name")
@@ -439,8 +523,14 @@ struct ReminderCLI: ParsableCommand {
                 targetCalendar = defaultCalendar
             }
 
+            // Extract tags from reminder name
+            let (cleanName, tags) = TagParser.extractTags(from: name)
+            
+            // Append tags to title
+            let titleWithTags = TagParser.appendTagsToTitle(cleanName, tags: tags)
+            
             let reminder = EKReminder(eventStore: store.eventStore)
-            reminder.title = name
+            reminder.title = titleWithTags
             reminder.calendar = targetCalendar
 
             // Set start date
@@ -476,7 +566,10 @@ struct ReminderCLI: ParsableCommand {
 
             do {
                 try store.eventStore.save(reminder, commit: true)
-                var message = "✅ Created reminder '\(name)' in list '\(targetCalendar.title)'"
+                var message = "✅ Created reminder '\(titleWithTags)' in list '\(targetCalendar.title)'"
+                if !tags.isEmpty {
+                    message += " [Tags: \(tags.joined(separator: ", "))]"
+                }
                 if let priorityStr = priority {
                     message += " [Priority: \(priorityStr)]"
                 }
@@ -581,9 +674,12 @@ struct ReminderCLI: ParsableCommand {
     // MARK: - Show Command
     
     struct Show: ParsableCommand {
-        static let configuration = CommandConfiguration(abstract: "Show detailed information about a reminder")
+        static let configuration = CommandConfiguration(
+            abstract: "Show detailed information about a reminder",
+            discussion: "Display comprehensive details about a reminder, including title (with tags), dates, priority, alarms, recurrence, and attachments."
+        )
 
-        @Argument(help: "Reminder name")
+        @Argument(help: "Reminder name (with or without tags)")
         var name: String
 
         @Option(name: .shortAndLong, help: "List name")
@@ -793,7 +889,10 @@ struct ReminderCLI: ParsableCommand {
     // MARK: - Search Command
     
     struct Search: ParsableCommand {
-        static let configuration = CommandConfiguration(abstract: "Search for reminders with filters")
+        static let configuration = CommandConfiguration(
+            abstract: "Search for reminders with filters",
+            discussion: "Search reminders by query, date, priority, tags, and other criteria. Tag search looks in both reminder titles and notes for backward compatibility."
+        )
 
         @Argument(help: "Search query (searches in title and notes)")
         var query: String?
@@ -828,7 +927,7 @@ struct ReminderCLI: ParsableCommand {
         @Flag(name: .long, help: "Show only uncompleted reminders")
         var uncompleted = false
         
-        @Option(name: .long, help: "Filter by tag (e.g., #work)")
+        @Option(name: .long, help: "Filter by tag (e.g., work or #work)")
         var tag: String?
 
         func run() throws {
@@ -898,8 +997,8 @@ struct ReminderCLI: ParsableCommand {
             
             if let tagFilter = tag {
                 let tagText = tagFilter.hasPrefix("#") ? tagFilter : "#\(tagFilter)"
-                filtered = filtered.filter {
-                    $0.notes?.contains(tagText) ?? false
+                filtered = filtered.filter { reminder in
+                    reminder.title.contains(tagText) || reminder.notes?.contains(tagText) ?? false
                 }
             }
             
@@ -1674,12 +1773,15 @@ struct ReminderCLI: ParsableCommand {
     // MARK: - AddTag Command
     
     struct AddTag: ParsableCommand {
-        static let configuration = CommandConfiguration(abstract: "Add a tag to a reminder (stored in notes as #tag)")
+        static let configuration = CommandConfiguration(
+            abstract: "Add a tag to a reminder",
+            discussion: "Add or append a tag to an existing reminder's title. Tags are stored in the task title (prefixed with #) for full Apple Reminders compatibility."
+        )
 
         @Argument(help: "Reminder name")
         var name: String
         
-        @Argument(help: "Tag name (without #)")
+        @Argument(help: "Tag name (without # prefix, e.g., work or urgent)")
         var tag: String
         
         @Option(name: .shortAndLong, help: "List name")
@@ -1699,24 +1801,21 @@ struct ReminderCLI: ParsableCommand {
             }
             
             let tagText = tag.hasPrefix("#") ? tag : "#\(tag)"
-            var currentNotes = reminder.notes ?? ""
             
-            // Check if tag already exists
-            if currentNotes.contains(tagText) {
+            // Check if tag already exists in title
+            if reminder.title.contains(tagText) {
                 print("ℹ️  Tag already exists: \(tagText)")
                 return
             }
             
-            if !currentNotes.isEmpty && !currentNotes.hasSuffix("\n") {
-                currentNotes += " "
-            }
-            
-            currentNotes += tagText
-            reminder.notes = currentNotes
+            // Append tag to title
+            let currentTitle = reminder.title ?? "Untitled"
+            let newTitle = "\(currentTitle) \(tagText)"
+            reminder.title = newTitle
             
             do {
                 try store.eventStore.save(reminder, commit: true)
-                print("✅ Added tag \(tagText) to: \(reminder.title ?? "Untitled")")
+                print("✅ Added tag \(tagText) to: \(newTitle)")
             } catch {
                 print("Error adding tag: \(error)")
             }
@@ -1726,7 +1825,10 @@ struct ReminderCLI: ParsableCommand {
     // MARK: - ListTags Command
     
     struct ListTags: ParsableCommand {
-        static let configuration = CommandConfiguration(abstract: "List all tags used in reminders")
+        static let configuration = CommandConfiguration(
+            abstract: "List all tags used in reminders",
+            discussion: "Display all tags currently in use across reminders, with their usage count. Tags are extracted from both reminder titles and notes for backward compatibility."
+        )
 
         @Option(name: .shortAndLong, help: "Filter by list name")
         var listName: String?
@@ -1757,15 +1859,28 @@ struct ReminderCLI: ParsableCommand {
             var tagCounts: [String: Int] = [:]
             
             for reminder in allReminders {
-                guard let notes = reminder.notes else { continue }
+                var tagsToProcess: [String] = []
                 
-                // Extract hashtags using regex-like pattern
-                let words = notes.components(separatedBy: CharacterSet.whitespacesAndNewlines)
-                for word in words {
-                    if word.hasPrefix("#") && word.count > 1 {
-                        let tag = word.trimmingCharacters(in: CharacterSet.punctuationCharacters.subtracting(CharacterSet(charactersIn: "#")))
-                        tagCounts[tag, default: 0] += 1
+                // Extract tags from title
+                let (_, titleTags) = TagParser.extractTagsFromTitle(reminder.title)
+                tagsToProcess.append(contentsOf: titleTags)
+                
+                // Extract tags from notes (for backward compatibility)
+                if let notes = reminder.notes {
+                    let words = notes.components(separatedBy: CharacterSet.whitespacesAndNewlines)
+                    for word in words {
+                        if word.hasPrefix("#") && word.count > 1 {
+                            var tag = String(word.dropFirst())  // Remove #
+                            tag = tag.trimmingCharacters(in: CharacterSet.punctuationCharacters.subtracting(CharacterSet(charactersIn: "#")))
+                            if !tag.isEmpty && !tagsToProcess.contains(tag) {
+                                tagsToProcess.append(tag)
+                            }
+                        }
                     }
+                }
+                
+                for tag in tagsToProcess {
+                    tagCounts[tag, default: 0] += 1
                 }
             }
             
@@ -1777,7 +1892,7 @@ struct ReminderCLI: ParsableCommand {
             print("=== Tags ===")
             let sortedTags = tagCounts.sorted { $0.value > $1.value }
             for (tag, count) in sortedTags {
-                print("  \(tag) (\(count) reminder\(count == 1 ? "" : "s"))")
+                print("  #\(tag) (\(count) reminder\(count == 1 ? "" : "s"))")
             }
         }
     }

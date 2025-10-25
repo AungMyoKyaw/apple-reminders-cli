@@ -16,6 +16,9 @@ DerivedData/
 *.dylib
 /usr/local/bin/apple-reminders-cli
 
+# Generated man page
+reminder.1
+
 # Swift Package Manager
 .build/
 .swiftpm/
