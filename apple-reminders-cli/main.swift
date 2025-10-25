@@ -246,7 +246,7 @@ struct ReminderCLI: ParsableCommand {
           reminder list --show-priority --show-dates
           reminder add-tag "Buy milk" review
         """,
-        version: "3.0.1",
+        version: "3.0.2",
         subcommands: [
             List.self,
             Lists.self,
