@@ -810,15 +810,19 @@
         }
 
         .code-body {
-            padding: 1.25rem;
+            padding: 0.75rem 1rem;
             font-family: 'IBM Plex Mono', monospace;
             font-size: 0.8125rem;
-            line-height: 1.8;
+            line-height: 1.6;
             overflow-x: auto;
+            white-space: pre-wrap;
         }
 
         .code-body code {
             color: var(--text-primary);
+            display: block;
+            margin: 0;
+            padding: 0;
         }
 
         .code-comment {
@@ -1583,11 +1587,29 @@
             </div>
 
             <div class="install-tabs reveal">
-                <button class="install-tab active" data-tab="source">Build from Source</button>
-                <button class="install-tab" data-tab="homebrew">Homebrew</button>
+                <button class="install-tab active" data-tab="homebrew">Homebrew</button>
+                <button class="install-tab" data-tab="source">Build from Source</button>
             </div>
 
-            <div class="install-content active" id="source">
+            <div class="install-content active" id="homebrew">
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">
+                            <i data-lucide="terminal" style="width: 14px; height: 14px;"></i>
+                            bash
+                        </span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i data-lucide="copy"></i>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <div class="code-body">
+                        <code>brew tap AungMyoKyaw/homebrew-tap && brew install AungMyoKyaw/homebrew-tap/reminder</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="install-content" id="source">
                 <div class="code-block">
                     <div class="code-header">
                         <span class="code-lang">
@@ -1604,28 +1626,6 @@
 git clone https://github.com/AungMyoKyaw/apple-reminders-cli.git
 cd apple-reminders-cli
 ./install.sh</code>
-                    </div>
-                </div>
-            </div>
-
-            <div class="install-content" id="homebrew">
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">
-                            <i data-lucide="terminal" style="width: 14px; height: 14px;"></i>
-                            bash
-                        </span>
-                        <button class="copy-btn" onclick="copyCode(this)">
-                            <i data-lucide="copy"></i>
-                            <span>Copy</span>
-                        </button>
-                    </div>
-                    <div class="code-body">
-                        <code><span class="code-comment"># Add the tap</span>
-brew tap AungMyoKyaw/homebrew-tap
-
-<span class="code-comment"># Install the CLI</span>
-brew install AungMyoKyaw/homebrew-tap/reminder</code>
                     </div>
                 </div>
             </div>
