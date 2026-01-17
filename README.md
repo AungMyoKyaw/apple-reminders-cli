@@ -311,4 +311,4 @@ reminder search --tag shopping
 
 ## Version
 
-**3.0.3** - Full feature parity with Reminders app
+**3.0.4** - Full feature parity with Reminders app
