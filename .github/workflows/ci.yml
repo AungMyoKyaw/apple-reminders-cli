@@ -15,11 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Swift
-        uses: swift-actions/setup-swift@v3
-        with:
-          swift-version: "5.10.1"
-
       - name: Show Swift version
         run: swift --version
 
