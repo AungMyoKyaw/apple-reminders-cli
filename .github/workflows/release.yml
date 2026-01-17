@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Release
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: "5.9"
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Building version: $VERSION"
+
+      - name: Generate man page
+        run: |
+          swift package plugin generate-manual
+          cp .build/plugins/GenerateManual/outputs/reminder/reminder.1 reminder.1
+
+      - name: Build universal binary
+        run: |
+          xcodebuild -project apple-reminders-cli.xcodeproj \
+                     -scheme apple-reminders-cli \
+                     -configuration Release \
+                     -arch arm64 \
+                     -arch x86_64 \
+                     ONLY_ACTIVE_ARCH=NO \
+                     -quiet
+
+      - name: Find and copy built binary
+        run: |
+          BINARY_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "reminder" -path "*/Build/Products/Release/*" -type f ! -path "*/Contents/Resources/DWARF/*" ! -path "*/.dSYM/*" 2>/dev/null | head -1)
+          if [ -z "$BINARY_PATH" ]; then
+            echo "Error: Built binary not found"
+            exit 1
+          fi
+          echo "Found binary at: $BINARY_PATH"
+          cp "$BINARY_PATH" ./reminder
+          file ./reminder
+
+      - name: Verify binary
+        run: |
+          if ! ./reminder --version; then
+            echo "Binary test failed"
+            exit 1
+          fi
+
+      - name: Create zip archive
+        run: |
+          ARCHIVE_NAME="reminder-${{ steps.get_version.outputs.VERSION }}.zip"
+          zip -j "$ARCHIVE_NAME" reminder
+          if [ -f "reminder.1" ]; then
+            zip -j "$ARCHIVE_NAME" reminder.1
+          fi
+          echo "ARCHIVE_NAME=$ARCHIVE_NAME" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "Release ${{ steps.get_version.outputs.VERSION }}" \
+            --generate-notes \
+            "$ARCHIVE_NAME"

@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  build:
+    name: Build on macOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Swift
+        uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: "5.9"
+
+      - name: Show Swift version
+        run: swift --version
+
+      - name: Build project
+        run: swift build -c release --disable-sandbox
+
+      - name: Generate man page
+        run: swift package plugin generate-manual
+
+      - name: Verify man page was generated
+        run: |
+          if [ -f ".build/plugins/GenerateManual/outputs/reminder/reminder.1" ]; then
+            echo "Man page generated successfully"
+          else
+            echo "Man page generation failed"
+            exit 1
+          fi
+
+      - name: Test binary version
+        run: |
+          .build/release/reminder --version
