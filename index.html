@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A powerful command-line interface for Apple Reminders built with Swift. Create, search, and manage reminders without leaving your terminal.">
+    <meta name="keywords"="="Apple Reminders CLI, Swift, macOS, terminal, command line, productivity, reminders">
+    <meta name="author" content="AungMyoKyaw">
+    <meta name="theme-color" content="#0a0a0b">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/AungMyoKyaw/apple-reminders-cli">
+    <meta property="og:title" content="Reminder - Apple Reminders CLI">
+    <meta property="og:description" content="A powerful command-line interface for Apple Reminders built with Swift. Create, search, and manage reminders without leaving your terminal.">
+    <meta property="og:image" content="https://repository-images.githubusercontent.com/672723677/b7e8e09e-cfc5-4e3d-b8a1-12c6d7e3e8af">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Reminder - Apple Reminders CLI">
+    <meta name="twitter:description" content="A powerful command-line interface for Apple Reminders built with Swift.">
+    <meta name="twitter:image" content="https://repository-images.githubusercontent.com/672723677/b7e8e09e-cfc5-4e3d-b8a1-12c6d7e3e8af">
+
+    <title>Reminder - Apple Reminders CLI</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2322d3ee' d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0b;
+            --bg-secondary: #111113;
+            --bg-tertiary: #1a1a1d;
+            --bg-elevated: #222225;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #22d3ee;
+            --accent-green: #4ade80;
+            --accent-orange: #fb923c;
+            --accent-purple: #a78bfa;
+            --border: #27272a;
+            --border-light: #3f3f46;
+            --glow-blue: rgba(59, 130, 246, 0.15);
+            --glow-cyan: rgba(34, 211, 238, 0.15);
+            --terminal-bg: #0d0d0f;
+            --terminal-border: #2a2a2d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Scroll Progress Bar */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+            z-index: 1001;
+            transition: width 0.1s ease-out;
+        }
+
+        /* Ambient background */
+        .ambient-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .ambient-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, var(--glow-blue) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, var(--glow-cyan) 0%, transparent 50%);
+            animation: ambientFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes ambientFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(5%, 5%) rotate(1deg); }
+            66% { transform: translate(-5%, 3%) rotate(-1deg); }
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(10, 10, 11, 0.8);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 14px;
+            height: 14px;
+            fill: white;
+        }
+
+        /* Lucide Icons */
+        i[data-lucide] {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-cta {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.875rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out, badgeGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes badgeGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+            50% { box-shadow: 0 0 20px 5px rgba(74, 222, 128, 0.1); }
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(180deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 540px;
+            margin-bottom: 2.5rem;
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeInUp 0.6s ease-out 0.3s both;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), #2563eb);
+            color: white;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-elevated);
+            border-color: var(--border-light);
+        }
+
+        /* Terminal */
+        .terminal-wrapper {
+            margin-top: 4rem;
+            animation: fadeInUp 0.6s ease-out 0.4s both;
+        }
+
+        .terminal {
+            background: var(--terminal-bg);
+            border: 1px solid var(--terminal-border);
+            border-radius: 12px;
+            overflow: hidden;
+            max-width: 680px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                        0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--terminal-border);
+        }
+
+        .terminal-buttons {
+            display: flex;
+            gap: 0.375rem;
+        }
+
+        .terminal-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-btn.close { background: #ff5f57; }
+        .terminal-btn.min { background: #ffbd2e; }
+        .terminal-btn.max { background: #28c840; }
+
+        .terminal-title {
+            flex: 1;
+            text-align: center;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .terminal-body {
+            padding: 1.5rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.8;
+            min-height: 200px;
+        }
+
+        .terminal-line {
+            display: flex;
+            gap: 0.75rem;
+            opacity: 0;
+            animation: terminalFadeIn 0.3s ease-out forwards;
+        }
+
+        .terminal-line.delay-1 { animation-delay: 0.5s; }
+        .terminal-line.delay-2 { animation-delay: 1.2s; }
+        .terminal-line.delay-3 { animation-delay: 1.7s; }
+        .terminal-line.delay-4 { animation-delay: 2.2s; }
+        .terminal-line.delay-5 { animation-delay: 2.7s; }
+        .terminal-line.delay-6 { animation-delay: 3.2s; }
+        .terminal-line.delay-7 { animation-delay: 3.7s; }
+
+        @keyframes terminalFadeIn {
+            to { opacity: 1; }
+        }
+
+        .typing-text {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid var(--accent-cyan);
+            animation: typing 2s steps(60) forwards, blinkCaret 0.75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blinkCaret {
+            50% { border-color: transparent; }
+        }
+
+        .terminal-prompt {
+            color: var(--accent-green);
+            white-space: nowrap;
+        }
+
+        .terminal-command {
+            color: var(--text-primary);
+        }
+
+        .terminal-output {
+            color: var(--text-secondary);
+            margin-left: 0;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: var(--accent-cyan);
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scroll Reveal Animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-stagger > * {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+
+        .reveal-stagger.visible > *:nth-child(1) { transition-delay: 0s; }
+        .reveal-stagger.visible > *:nth-child(2) { transition-delay: 0.1s; }
+        .reveal-stagger.visible > *:nth-child(3) { transition-delay: 0.2s; }
+        .reveal-stagger.visible > *:nth-child(4) { transition-delay: 0.3s; }
+        .reveal-stagger.visible > *:nth-child(5) { transition-delay: 0.4s; }
+        .reveal-stagger.visible > *:nth-child(6) { transition-delay: 0.5s; }
+        .reveal-stagger.visible > * {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Sections */
+        section {
+            padding: 6rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .section-desc {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            max-width: 540px;
+            margin: 0 auto;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(59, 130, 246, 0.03) 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--border-light);
+            transform: translateY(-4px);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            color: var(--accent-cyan);
+        }
+
+        .feature-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .feature-icon i,
+        .use-case-icon i {
+            width: 24px;
+            height: 24px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        /* Comparison Table */
+        .comparison-table {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .comparison-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-row.header {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .comparison-feature {
+            font-weight: 500;
+        }
+
+        .comparison-check {
+            color: var(--accent-green);
+            font-size: 1.25rem;
+            text-align: center;
+        }
+
+        .comparison-cross {
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            text-align: center;
+        }
+
+        /* Keyboard Shortcuts */
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .shortcut-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shortcut-action {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+        }
+
+        .shortcut-keys {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .key {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            min-width: 24px;
+            text-align: center;
+        }
+
+        /* Use Cases */
+        .use-cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .use-case-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .use-case-card:hover {
+            border-color: var(--border-light);
+            transform: translateY(-2px);
+        }
+
+        .use-case-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .use-case-icon svg {
+            width: 20px;
+            height: 20px;
+            color: white;
+        }
+
+        .use-case-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .use-case-card p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* Installation Section */
+        .install-section {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .install-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .install-tab {
+            padding: 0.625rem 1.25rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .install-tab:hover {
+            color: var(--text-primary);
+            border-color: var(--border-light);
+        }
+
+        .install-tab.active {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--border-light);
+        }
+
+        .install-content {
+            display: none;
+        }
+
+        .install-content.active {
+            display: block;
+        }
+
+        .code-block {
+            background: var(--terminal-bg);
+            border: 1px solid var(--terminal-border);
+            border-radius: 10px;
+            overflow: hidden;
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--terminal-border);
+        }
+
+        .code-lang {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .copy-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .copy-btn.copied {
+            color: var(--accent-green);
+        }
+
+        .code-body {
+            padding: 1.25rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.8;
+            overflow-x: auto;
+        }
+
+        .code-body code {
+            color: var(--text-primary);
+        }
+
+        .code-comment {
+            color: var(--text-muted);
+        }
+
+        .code-keyword {
+            color: var(--accent-purple);
+        }
+
+        .code-string {
+            color: var(--accent-green);
+        }
+
+        /* Examples Section */
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .example-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .example-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .example-body {
+            padding: 1rem;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.8125rem;
+        }
+
+        .example-command {
+            color: var(--accent-cyan);
+        }
+
+        .example-desc {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-top: 0.75rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .quick-copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.6875rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            opacity: 0;
+        }
+
+        .example-card:hover .quick-copy-btn {
+            opacity: 1;
+        }
+
+        .quick-copy-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--border-light);
+        }
+
+        .quick-copy-btn.copied {
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        /* Priority Reference */
+        .priority-table {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .priority-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9375rem;
+        }
+
+        .priority-row:last-child {
+            border-bottom: none;
+        }
+
+        .priority-row.header {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .priority-symbol {
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-text {
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 48px;
+            height: 48px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 99;
+            color: var(--text-secondary);
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-light);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        .back-to-top svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+
+        .mobile-menu-btn:hover {
+            background: var(--bg-tertiary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 0.75rem 1rem;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--bg-secondary);
+                border-bottom: 1px solid var(--border);
+                flex-direction: column;
+                padding: 1rem;
+                gap: 0;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links li {
+                width: 100%;
+            }
+
+            .nav-links a {
+                display: block;
+                padding: 0.75rem 1rem;
+                border-radius: 6px;
+            }
+
+            .nav-links a:hover {
+                background: var(--bg-tertiary);
+            }
+
+            .nav-cta {
+                display: none;
+            }
+
+            .hero {
+                padding: 6rem 1.25rem 3rem;
+                min-height: auto;
+            }
+
+            .hero-badge {
+                font-size: 0.6875rem;
+                padding: 0.3125rem 0.75rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .hero h1 {
+                font-size: 2.25rem;
+                line-height: 1.15;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                width: 100%;
+                max-width: 280px;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+                padding: 0.875rem 1.25rem;
+            }
+
+            .terminal-wrapper {
+                margin-top: 2.5rem;
+            }
+
+            .terminal {
+                border-radius: 10px;
+            }
+
+            .terminal-body {
+                padding: 1rem;
+                font-size: 0.75rem;
+                overflow-x: auto;
+            }
+
+            .terminal-command {
+                overflow-wrap: break-word;
+                word-break: break-all;
+            }
+
+            .typing-text {
+                white-space: normal;
+                animation: none;
+            }
+
+            section {
+                padding: 4rem 1.25rem;
+            }
+
+            .section-header {
+                margin-bottom: 2.5rem;
+            }
+
+            .section-title {
+                font-size: 1.875rem;
+            }
+
+            .section-desc {
+                font-size: 1rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .feature-card {
+                padding: 1.25rem;
+            }
+
+            .feature-icon {
+                width: 42px;
+                height: 42px;
+            }
+
+            .feature-icon svg,
+            .feature-icon i,
+            .use-case-icon i {
+                width: 20px;
+                height: 20px;
+            }
+
+            .feature-card h3 {
+                font-size: 1rem;
+            }
+
+            .feature-card p {
+                font-size: 0.875rem;
+            }
+
+            .comparison-table {
+                overflow-x: auto;
+            }
+
+            .comparison-row {
+                grid-template-columns: 1.5fr 1fr 1fr;
+                padding: 0.875rem 1rem;
+                font-size: 0.8125rem;
+                min-width: 400px;
+            }
+
+            .install-tabs {
+                flex-direction: row;
+                width: 100%;
+            }
+
+            .install-tab {
+                flex: 1;
+                text-align: center;
+                padding: 0.625rem 1rem;
+                font-size: 0.8125rem;
+            }
+
+            .code-block {
+                border-radius: 10px;
+            }
+
+            .code-body {
+                padding: 1rem;
+                font-size: 0.75rem;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .code-body code {
+                display: block;
+                min-width: max-content;
+            }
+
+            .examples-grid {
+                grid-template-columns: 1fr;
+                gap: 0.875rem;
+            }
+
+            .example-body {
+                padding: 0.875rem;
+                font-size: 0.75rem;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .example-command {
+                display: block;
+                min-width: max-content;
+            }
+
+            .quick-copy-btn {
+                opacity: 1;
+                position: static;
+                margin-top: 0.5rem;
+                width: 100%;
+            }
+
+            .shortcuts-grid,
+            .use-cases-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .priority-table {
+                max-width: 100%;
+            }
+
+            .priority-row {
+                grid-template-columns: 1.2fr 0.8fr 0.8fr;
+                padding: 0.875rem 1rem;
+                font-size: 0.875rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+
+            .footer-links a {
+                font-size: 0.9375rem;
+            }
+
+            .back-to-top {
+                bottom: 1rem;
+                right: 1rem;
+                width: 42px;
+                height: 42px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.875rem;
+            }
+
+            .section-title {
+                font-size: 1.625rem;
+            }
+
+            .priority-row {
+                grid-template-columns: 1fr 0.6fr 0.6fr;
+                padding: 0.75rem 0.75rem;
+                font-size: 0.8125rem;
+                gap: 0.25rem;
+            }
+
+            .terminal-command,
+            .example-command {
+                font-size: 0.6875rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .hero h1 {
+                font-size: 1.625rem;
+            }
+
+            .btn {
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">
+        <i data-lucide="chevron-up"></i>
+    </button>
+
+    <div class="ambient-bg"></div>
+
+    <nav>
+        <div class="logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                </svg>
+            </div>
+            reminder
+        </div>
+        <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#comparison">Compare</a></li>
+            <li><a href="#install">Install</a></li>
+            <li><a href="#examples">Examples</a></li>
+            <li><a href="#shortcuts">Shortcuts</a></li>
+        </ul>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <a href="https://github.com/AungMyoKyaw/apple-reminders-cli" class="nav-cta" target="_blank">GitHub</a>
+            <button class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <div class="content">
+        <section class="hero">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                v3.0.2 — Full feature parity
+            </div>
+            <h1>Apple Reminders<br><span>for your terminal</span></h1>
+            <p class="hero-subtitle">
+                A powerful command-line interface for Apple Reminders built with Swift.
+                Create, search, and manage reminders without leaving your terminal.
+            </p>
+            <div class="hero-actions">
+                <a href="#install" class="btn btn-primary">
+                    <i data-lucide="download" style="width: 18px; height: 18px;"></i>
+                    Install Now
+                </a>
+                <a href="https://github.com/AungMyoKyaw/apple-reminders-cli" class="btn btn-secondary" target="_blank">
+                    <i data-lucide="github" style="width: 18px; height: 18px; fill: currentColor; stroke: none;"></i>
+                    View Source
+                </a>
+            </div>
+
+            <div class="terminal-wrapper">
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-buttons">
+                            <span class="terminal-btn close"></span>
+                            <span class="terminal-btn min"></span>
+                            <span class="terminal-btn max"></span>
+                        </div>
+                        <span class="terminal-title">terminal — bash</span>
+                    </div>
+                    <div class="terminal-body" id="terminalBody">
+                        <div class="terminal-line delay-1">
+                            <span class="terminal-prompt">➜</span>
+                            <span class="terminal-command"><span class="typing-text">reminder create "Deploy release" --priority high --due-date tomorrow</span></span>
+                        </div>
+                        <div class="terminal-line delay-2">
+                            <span class="terminal-output">✓ Created: ☐ Deploy release #production #important</span>
+                        </div>
+                        <div class="terminal-line delay-3" style="margin-top: 0.5rem;">
+                            <span class="terminal-prompt">➜</span>
+                            <span class="terminal-command">reminder search --tag work</span>
+                        </div>
+                        <div class="terminal-line delay-4">
+                            <span class="terminal-output">☐ Fix authentication bug #work #urgent</span>
+                        </div>
+                        <div class="terminal-line delay-5">
+                            <span class="terminal-output">☐ Review PR #234 #work #review</span>
+                        </div>
+                        <div class="terminal-line delay-6">
+                            <span class="terminal-output">☑ Team standup notes #work</span>
+                        </div>
+                        <div class="terminal-line delay-7" style="margin-top: 0.5rem;">
+                            <span class="terminal-prompt">➜</span>
+                            <span class="terminal-cursor"><span class="cursor"></span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features">
+            <div class="section-header reveal">
+                <span class="section-label">
+                    <i data-lucide="star"></i>
+                    Features
+                </span>
+                <h2 class="section-title">Everything you need</h2>
+                <p class="section-desc">Complete control over your reminders with a CLI designed for power users.</p>
+            </div>
+
+            <div class="features-grid reveal-stagger">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="edit-3"></i>
+                    </div>
+                    <h3>Complete Management</h3>
+                    <p>Create, update, complete, and delete reminders with simple commands.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="list"></i>
+                    </div>
+                    <h3>List Management</h3>
+                    <p>Create, rename, and organize reminder lists for different contexts.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="search"></i>
+                    </div>
+                    <h3>Advanced Search</h3>
+                    <p>Filter by priority, dates, tags, URLs, alarms, and more.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="tag"></i>
+                    </div>
+                    <h3>Tag System</h3>
+                    <p>Organize with hashtags like #work #urgent that sync across Apple devices.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="file-json"></i>
+                    </div>
+                    <h3>JSON Output</h3>
+                    <p>Machine-readable output for automation and scripting with jq.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="bar-chart-3"></i>
+                    </div>
+                    <h3>Statistics</h3>
+                    <p>Track productivity metrics and completion rates over time.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison">
+            <div class="section-header reveal">
+                <span class="section-label">
+                    <i data-lucide="scale"></i>
+                    Comparison
+                </span>
+                <h2 class="section-title">CLI vs Reminders App</h2>
+                <p class="section-desc">Why choose the terminal over the GUI?</p>
+            </div>
+
+            <div class="comparison-table reveal">
+                <div class="comparison-row header">
+                    <span>Feature</span>
+                    <span>Reminder CLI</span>
+                    <span>Reminders App</span>
+                </div>
+                <div class="comparison-row">
+                    <span class="comparison-feature">Lightning-fast creation</span>
+                    <span class="comparison-check">✓</span>
+                    <span class="comparison-cross">✗</span>
+                </div>
+                <div class="comparison-row">
+                    <span class="comparison-feature">JSON/automation support</span>
+                    <span class="comparison-check">✓</span>
+                    <span class="comparison-cross">✗</span>
+                </div>
+                <div class="comparison-row">
+                    <span class="comparison-feature">Scriptable workflows</span>
+                    <span class="comparison-check">✓</span>
+                    <span class="comparison-cross">✗</span>
+                </div>
+                <div class="comparison-row">
+                    <span class="comparison-feature">Bulk operations</span>
+                    <span class="comparison-check">✓</span>
+                    <span class="comparison-cross">✗</span>
+                </div>
+                <div class="comparison-row">
+                    <span class="comparison-feature">Advanced search filters</span>
+                    <span class="comparison-check">✓</span>
+                    <span class="comparison-cross">✗</span>
+                </div>
+                <div class="comparison-row">
+                    <span class="comparison-feature">iCloud sync</span>
+                    <span class="comparison-check">✓</span>
+                    <span class="comparison-check">✓</span>
+                </div>
+                <div class="comparison-row">
+                    <span class="comparison-feature">Location-based reminders</span>
+                    <span class="comparison-check">✓</span>
+                    <span class="comparison-check">✓</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="use-cases">
+            <div class="section-header reveal">
+                <span class="section-label">
+                    <i data-lucide="zap"></i>
+                    Use Cases
+                </span>
+                <h2 class="section-title">Built for power users</h2>
+                <p class="section-desc">Real-world scenarios where the CLI shines.</p>
+            </div>
+
+            <div class="use-cases-grid reveal-stagger">
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <i data-lucide="terminal"></i>
+                    </div>
+                    <h4>Developer Workflow</h4>
+                    <p>Create tasks from Jira tickets, sync with GitHub PRs, and manage sprint backlog without leaving your terminal.</p>
+                </div>
+
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <i data-lucide="bolt"></i>
+                    </div>
+                    <h4>Quick Capture</h4>
+                    <p>Type a reminder faster than unlocking your phone and opening the Reminders app.</p>
+                </div>
+
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <i data-lucide="cog"></i>
+                    </div>
+                    <h4>Automation</h4>
+                    <p>Integrate with shell scripts, cron jobs, and other CLI tools for automated task management.</p>
+                </div>
+
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <i data-lucide="trending-up"></i>
+                    </div>
+                    <h4>Productivity Tracking</h4>
+                    <p>Use JSON output to build custom dashboards and track completion rates over time.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="install" class="install-section">
+            <div class="section-header reveal">
+                <span class="section-label">
+                    <i data-lucide="download"></i>
+                    Installation
+                </span>
+                <h2 class="section-title">Get started in seconds</h2>
+                <p class="section-desc">Choose your preferred installation method.</p>
+            </div>
+
+            <div class="install-tabs reveal">
+                <button class="install-tab active" data-tab="homebrew">Homebrew</button>
+                <button class="install-tab" data-tab="source">Build from Source</button>
+            </div>
+
+            <div class="install-content active" id="homebrew">
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">
+                            <i data-lucide="terminal" style="width: 14px; height: 14px;"></i>
+                            bash
+                        </span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i data-lucide="copy"></i>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <div class="code-body">
+                        <code><span class="code-comment"># Add the tap</span>
+brew tap AungMyoKyaw/homebrew-tap
+
+<span class="code-comment"># Install the CLI</span>
+brew install AungMyoKyaw/homebrew-tap/reminder</code>
+                    </div>
+                </div>
+            </div>
+
+            <div class="install-content" id="source">
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">
+                            <i data-lucide="terminal" style="width: 14px; height: 14px;"></i>
+                            bash
+                        </span>
+                        <button class="copy-btn" onclick="copyCode(this)">
+                            <i data-lucide="copy"></i>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <div class="code-body">
+                        <code><span class="code-comment"># Clone and build</span>
+git clone https://github.com/AungMyoKyaw/apple-reminders-cli.git
+cd apple-reminders-cli
+./install.sh</code>
+                    </div>
+                </div>
+            </div>
+
+            <p style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.875rem;" class="reveal">
+                <span style="color: var(--accent-orange);">⚠️</span> On first run, grant Calendar/Reminders permissions in<br>
+                <strong>System Settings → Privacy & Security → Calendars</strong>
+            </p>
+        </section>
+
+        <section id="examples">
+            <div class="section-header reveal">
+                <span class="section-label">
+                    <i data-lucide="code-2"></i>
+                    Usage
+                </span>
+                <h2 class="section-title">Common commands</h2>
+                <p class="section-desc">Get productive immediately with these essential commands.</p>
+            </div>
+
+            <div class="examples-grid reveal-stagger">
+                <div class="example-card">
+                    <div class="example-header">
+                        <span>bash</span>
+                    </div>
+                    <div class="example-body">
+                        <div class="example-command">reminder list</div>
+                        <div class="example-desc">List all reminders</div>
+                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <div class="example-header">
+                        <span>bash</span>
+                    </div>
+                    <div class="example-body">
+                        <div class="example-command">reminder create "Buy groceries" --due-date tomorrow</div>
+                        <div class="example-desc">Create with due date</div>
+                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <div class="example-header">
+                        <span>bash</span>
+                    </div>
+                    <div class="example-body">
+                        <div class="example-command">reminder create "Fix bug #work #urgent" --priority high</div>
+                        <div class="example-desc">Create with tags & priority</div>
+                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <div class="example-header">
+                        <span>bash</span>
+                    </div>
+                    <div class="example-body">
+                        <div class="example-command">reminder complete "Buy groceries"</div>
+                        <div class="example-desc">Mark as complete</div>
+                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <div class="example-header">
+                        <span>bash</span>
+                    </div>
+                    <div class="example-body">
+                        <div class="example-command">reminder search --tag work</div>
+                        <div class="example-desc">Search by tag</div>
+                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <div class="example-header">
+                        <span>bash</span>
+                    </div>
+                    <div class="example-body">
+                        <div class="example-command">reminder list --json | jq '.[0].title'</div>
+                        <div class="example-desc">JSON output with jq</div>
+                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <div class="example-header">
+                        <span>bash</span>
+                    </div>
+                    <div class="example-body">
+                        <div class="example-command">reminder stats</div>
+                        <div class="example-desc">View productivity stats</div>
+                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <div class="example-header">
+                        <span>bash</span>
+                    </div>
+                    <div class="example-body">
+                        <div class="example-command">reminder create-list "New Project"</div>
+                        <div class="example-desc">Create new list</div>
+                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="shortcuts">
+            <div class="section-header reveal">
+                <span class="section-label">
+                    <i data-lucide="keyboard"></i>
+                    Keyboard Shortcuts
+                </span>
+                <h2 class="section-title">Work faster</h2>
+                <p class="section-desc">Priority shortcuts for power users.</p>
+            </div>
+
+            <div class="shortcuts-grid reveal">
+                <div class="shortcut-card">
+                    <span class="shortcut-action">High Priority</span>
+                    <div class="shortcut-keys">
+                        <span class="key">h</span>
+                        <span class="key">1-4</span>
+                    </div>
+                </div>
+
+                <div class="shortcut-card">
+                    <span class="shortcut-action">Medium Priority</span>
+                    <div class="shortcut-keys">
+                        <span class="key">m</span>
+                        <span class="key">5</span>
+                    </div>
+                </div>
+
+                <div class="shortcut-card">
+                    <span class="shortcut-action">Low Priority</span>
+                    <div class="shortcut-keys">
+                        <span class="key">l</span>
+                        <span class="key">6-9</span>
+                    </div>
+                </div>
+
+                <div class="shortcut-card">
+                    <span class="shortcut-action">No Priority</span>
+                    <div class="shortcut-keys">
+                        <span class="key">n</span>
+                        <span class="key">0</span>
+                    </div>
+                </div>
+
+                <div class="shortcut-card">
+                    <span class="shortcut-action">Today</span>
+                    <div class="shortcut-keys">
+                        <span class="key">today</span>
+                    </div>
+                </div>
+
+                <div class="shortcut-card">
+                    <span class="shortcut-action">Tomorrow</span>
+                    <div class="shortcut-keys">
+                        <span class="key">tomorrow</span>
+                    </div>
+                </div>
+
+                <div class="shortcut-card">
+                    <span class="shortcut-action">Relative Dates</span>
+                    <div class="shortcut-keys">
+                        <span class="key">in 3d</span>
+                    </div>
+                </div>
+
+                <div class="shortcut-card">
+                    <span class="shortcut-action">Help</span>
+                    <div class="shortcut-keys">
+                        <span class="key">--help</span>
+                        <span class="key">-h</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-header reveal">
+                <span class="section-label">
+                    <i data-lucide="info"></i>
+                    Reference
+                </span>
+                <h2 class="section-title">Priority levels</h2>
+                <p class="section-desc">Quick reference for priority symbols and values.</p>
+            </div>
+
+            <div class="priority-table reveal">
+                <div class="priority-row header">
+                    <span>Priority</span>
+                    <span>Symbol</span>
+                    <span>Values</span>
+                </div>
+                <div class="priority-row">
+                    <span>High</span>
+                    <span class="priority-symbol">!!!</span>
+                    <span>1-4</span>
+                </div>
+                <div class="priority-row">
+                    <span>Medium</span>
+                    <span class="priority-symbol">!!</span>
+                    <span>5</span>
+                </div>
+                <div class="priority-row">
+                    <span>Low</span>
+                    <span class="priority-symbol">!</span>
+                    <span>6-9</span>
+                </div>
+                <div class="priority-row">
+                    <span>None</span>
+                    <span class="priority-symbol">—</span>
+                    <span>0</span>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-header reveal">
+                <span class="section-label">
+                    <i data-lucide="wrench"></i>
+                    Built With
+                </span>
+                <h2 class="section-title">Native & powerful</h2>
+                <p class="section-desc">Built with Apple's own technologies for seamless integration.</p>
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;" class="reveal">
+                <div style="text-align: center;">
+                    <div style="width: 64px; height: 64px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                        <i data-lucide="layers" style="width: 32px; height: 32px; stroke: var(--accent-orange);"></i>
+                    </div>
+                    <div style="font-weight: 600;">Swift</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 64px; height: 64px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                        <i data-lucide="calendar" style="width: 32px; height: 32px; stroke: var(--accent-purple);"></i>
+                    </div>
+                    <div style="font-weight: 600;">EventKit</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="width: 64px; height: 64px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                        <i data-lucide="box" style="width: 32px; height: 32px; stroke: var(--accent-cyan);"></i>
+                    </div>
+                    <div style="font-weight: 600;">ArgumentParser</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                    </svg>
+                </div>
+                reminder
+            </div>
+            <ul class="footer-links">
+                <li><a href="https://github.com/AungMyoKyaw/apple-reminders-cli" target="_blank">GitHub</a></li>
+                <li><a href="https://github.com/AungMyoKyaw/apple-reminders-cli/issues" target="_blank">Issues</a></li>
+                <li><a href="https://github.com/AungMyoKyaw/apple-reminders-cli/blob/master/README.md" target="_blank">Documentation</a></li>
+                <li><a href="https://github.com/AungMyoKyaw/apple-reminders-cli/stargazers" target="_blank">Star ⭐</a></li>
+            </ul>
+            <p class="footer-text">Built with Swift for macOS. Free and open source under MIT license.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Scroll Progress Bar
+        const scrollProgress = document.getElementById('scrollProgress');
+        window.addEventListener('scroll', () => {
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const progress = (scrollTop / scrollHeight) * 100;
+            scrollProgress.style.width = progress + '%';
+        });
+
+        // Back to Top Button
+        const backToTop = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 500) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Scroll Reveal Animations (Intersection Observer)
+        const revealElements = document.querySelectorAll('.reveal, .reveal-stagger');
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        revealElements.forEach(el => observer.observe(el));
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            const isOpen = navLinks.classList.contains('active');
+            mobileMenuBtn.setAttribute('aria-expanded', isOpen);
+        });
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                mobileMenuBtn.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('nav')) {
+                navLinks.classList.remove('active');
+                mobileMenuBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Tab switching
+        document.querySelectorAll('.install-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.install-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.install-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Copy code function
+        function copyCode(btn) {
+            const code = btn.closest('.code-block').querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const icon = btn.querySelector('i');
+                const text = btn.querySelector('span');
+                icon.setAttribute('data-lucide', 'check');
+                text.textContent = 'Copied!';
+                btn.classList.add('copied');
+                lucide.createIcons();
+                setTimeout(() => {
+                    icon.setAttribute('data-lucide', 'copy');
+                    text.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                    lucide.createIcons();
+                }, 2000);
+            });
+        }
+
+        // Copy example command
+        function copyExample(btn) {
+            const command = btn.closest('.example-body').querySelector('.example-command').textContent;
+            navigator.clipboard.writeText(command).then(() => {
+                const originalText = btn.textContent;
+                btn.classList.add('copied');
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Smooth scroll for nav links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
