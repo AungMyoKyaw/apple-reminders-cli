@@ -7,6 +7,7 @@ A powerful command-line interface for Apple Reminders built with Swift and Event
 - **Complete Reminder Management** - Create, update, complete, delete reminders
 - **List Management** - Create, rename, delete reminder lists
 - **Advanced Search** - Filter by priority, dates, tags, URLs, alarms
+- **JSON Output** - Machine-readable output for automation and scripting
 - **Enhanced Features** - Tags, subtasks, recurring reminders, location alerts
 - **Statistics** - Track productivity metrics and completion rates
 - **Priority Management** - High/Medium/Low priority levels
@@ -30,6 +31,18 @@ brew install AungMyoKyaw/homebrew-tap/reminder
 ```bash
 cd apple-reminders-cli
 ./install.sh          # Builds and installs both CLI and man page
+```
+
+By default, this installs to `~/.local/bin` (no sudo required). To install system-wide:
+
+```bash
+./install.sh --system  # Installs to /usr/local/bin (requires sudo)
+```
+
+You can also specify a custom prefix:
+
+```bash
+./install.sh --prefix /custom/path
 ```
 
 Or manually:
@@ -113,6 +126,12 @@ reminder list
 # Create a new reminder
 reminder create "Buy groceries" --priority high --due-date tomorrow
 
+# Complete multiple reminders
+reminder complete "Buy groceries" "Call Mom"
+
+# Delete multiple reminders
+reminder delete "Spam" "Old Task"
+
 # Show help
 reminder --help
 ```
@@ -175,6 +194,15 @@ reminder list-tags --list-name Work
 ```bash
 reminder update "task" --new-priority medium
 reminder update "task" --new-due-date tomorrow
+reminder update "task" --new-due-date remove   # Remove due date
+```
+
+### JSON Output
+All listing and search commands support JSON output for integration with other tools like `jq`.
+```bash
+reminder list --json
+reminder search "meeting" --json | jq '.[0].title'
+reminder show "task" --json
 ```
 
 ### Search & Stats

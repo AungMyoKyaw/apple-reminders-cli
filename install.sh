@@ -5,6 +5,44 @@
 
 set -e
 
+INSTALL_USER=true
+PREFIX="$HOME/.local"
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --user) INSTALL_USER=true; shift ;;
+        --system) INSTALL_USER=false; PREFIX="/usr/local"; shift ;;
+        --prefix) PREFIX="$2"; INSTALL_USER=false; shift 2 ;;
+        -h|--help)
+            echo "Usage: ./install.sh [options]"
+            echo "Options:"
+            echo "  --user          Install to ~/.local/bin and ~/.local/share/man (default)"
+            echo "  --system        Install to /usr/local/bin and /usr/local/share/man (requires sudo)"
+            echo "  --prefix <path> Install to <path>/bin and <path>/share/man"
+            echo "  -h, --help      Show this help message"
+            exit 0
+            ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+done
+
+if [ "$INSTALL_USER" = true ]; then
+    INSTALL_DIR="$HOME/.local/bin"
+    MAN_DIR="$HOME/.local/share/man/man1"
+else
+    INSTALL_DIR="$PREFIX/bin"
+    MAN_DIR="$PREFIX/share/man/man1"
+fi
+
+# Function to run command with sudo only if the current user lacks write permissions
+run_cmd() {
+    if [ -w "$(dirname "$1")" ] || [ -w "$1" ] || [ ! -e "$1" -a -w "$(dirname "$1")" ]; then
+        "$@"
+    else
+        sudo "$@"
+    fi
+}
+
 echo "🍎 Apple Reminders CLI - Installation Script"
 echo "=============================================="
 echo ""
@@ -38,63 +76,52 @@ else
 fi
 
 echo "📦 Building project..."
-xcodebuild -project apple-reminders-cli.xcodeproj \
-    -scheme apple-reminders-cli \
-    -configuration Release \
-    clean build \
-    > /dev/null 2>&1
+swift build -c release --disable-sandbox > /dev/null 2>&1
 
 if [ $? -ne 0 ]; then
     echo "❌ Build failed. Running with output:"
-    xcodebuild -project apple-reminders-cli.xcodeproj \
-        -scheme apple-reminders-cli \
-        -configuration Release \
-        build
+    swift build -c release --disable-sandbox
     exit 1
 fi
 
 echo "✅ Build successful!"
 
-# Find the built executable
-EXECUTABLE=$(find ~/Library/Developer/Xcode/DerivedData/apple-reminders-cli-* \
-    -name "reminder" -type f -perm +111 2>/dev/null | grep Release | head -n1)
+# Find the built executable 'reminder' in the .build directory
+EXECUTABLE=$(find .build -name "reminder" -type f -perm +111 2>/dev/null | grep "/release/" | head -n1)
 
-if [ -z "$EXECUTABLE" ]; then
-    echo "❌ Error: Could not find built executable"
+if [ -z "$EXECUTABLE" ] || [ ! -f "$EXECUTABLE" ]; then
+    echo "❌ Error: Could not find built executable 'reminder' in .build directory"
     exit 1
 fi
 
 echo "📍 Found executable: $EXECUTABLE"
 
-# Install to /usr/local/bin
-INSTALL_DIR="/usr/local/bin"
 INSTALL_NAME="reminder"
 
 echo "📥 Installing to $INSTALL_DIR/$INSTALL_NAME..."
 
 if [ ! -d "$INSTALL_DIR" ]; then
     echo "Creating $INSTALL_DIR directory..."
-    sudo mkdir -p "$INSTALL_DIR"
+    run_cmd mkdir -p "$INSTALL_DIR"
 fi
 
-sudo cp "$EXECUTABLE" "$INSTALL_DIR/$INSTALL_NAME"
-sudo chmod +x "$INSTALL_DIR/$INSTALL_NAME"
+run_cmd cp "$EXECUTABLE" "$INSTALL_DIR/$INSTALL_NAME"
+run_cmd chmod +x "$INSTALL_DIR/$INSTALL_NAME"
 
 echo "✅ Installation complete!"
 echo ""
 
 # Install man page
 echo "📖 Installing man page..."
-MAN_DIR="/usr/local/share/man/man1"
 
 if [ ! -d "$MAN_DIR" ]; then
     echo "Creating man page directory: $MAN_DIR"
-    sudo mkdir -p "$MAN_DIR"
+    run_cmd mkdir -p "$MAN_DIR"
 fi
 
 if [ -f "reminder.1" ]; then
-    sudo cp "reminder.1" "$MAN_DIR/reminder.1"
-    sudo chmod 644 "$MAN_DIR/reminder.1"
+    run_cmd cp "reminder.1" "$MAN_DIR/reminder.1"
+    run_cmd chmod 644 "$MAN_DIR/reminder.1"
     echo "✅ Man page installed!"
     echo "   Access with: man reminder"
 else
@@ -103,6 +130,14 @@ fi
 
 echo ""
 echo "🎉 You can now use the CLI with the 'reminder' command"
+
+if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
+    echo ""
+    echo "⚠️  Note: $INSTALL_DIR is not in your PATH."
+    echo "   You may need to add it to your shell profile (e.g., ~/.zshrc or ~/.bash_profile):"
+    echo "   export PATH=\"\$PATH:$INSTALL_DIR\""
+fi
+
 echo ""
 echo "Examples:"
 echo "  reminder list"
@@ -118,3 +153,4 @@ echo ""
 echo "⚠️  Note: On first run, you'll need to grant Calendar/Reminders permissions"
 echo "    Go to: System Settings → Privacy & Security → Calendars"
 echo ""
+
