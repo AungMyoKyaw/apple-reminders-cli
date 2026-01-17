@@ -83,7 +83,7 @@ class ReminderStore {
 
 struct ReminderCLI: ParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "apple-reminders-cli",
+        commandName: "reminder",
         abstract: "A CLI tool for interacting with Apple Reminders",
         subcommands: [List.self, Create.self, Update.self, Show.self, Complete.self, Delete.self, Search.self, Stats.self]
     )
