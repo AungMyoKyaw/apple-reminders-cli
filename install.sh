@@ -108,6 +108,10 @@ fi
 run_cmd cp "$EXECUTABLE" "$INSTALL_DIR/$INSTALL_NAME"
 run_cmd chmod +x "$INSTALL_DIR/$INSTALL_NAME"
 
+if command -v xattr &> /dev/null; then
+    run_cmd xattr -d com.apple.quarantine "$INSTALL_DIR/$INSTALL_NAME" 2>/dev/null || true
+fi
+
 echo "✅ Installation complete!"
 echo ""
 

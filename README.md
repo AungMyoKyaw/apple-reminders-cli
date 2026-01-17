@@ -252,6 +252,23 @@ On first run, grant Calendar/Reminders access:
 
 Enable access for your terminal app or the CLI executable.
 
+## Troubleshooting
+
+### Gatekeeper / "Malware" Error
+Since this tool is built from source and not signed with an Apple Developer account, you might see an error: *“reminder” is free of malware that may harm your Mac...*
+
+**To solve this:**
+1. Open your terminal.
+2. Run the following command:
+   ```bash
+   # If installed via install.sh (default)
+   xattr -d com.apple.quarantine ~/.local/bin/reminder
+   
+   # If installed system-wide
+   sudo xattr -d com.apple.quarantine /usr/local/bin/reminder
+   ```
+3. Alternatively, right-click the executable in Finder, select **Open**, and then click **Open** again in the warning dialog.
+
 ## Tag Behavior & Compatibility
 
 **Tag Storage:**
