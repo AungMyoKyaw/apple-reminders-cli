@@ -47,6 +47,11 @@ jobs:
           file ./reminder
           lipo -info ./reminder
 
+      - name: Ad-hoc sign binary
+        run: |
+          codesign -s - ./reminder
+          codesign -v ./reminder
+
       - name: Verify binary
         run: |
           if ! ./reminder --version; then
