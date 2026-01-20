@@ -1,2032 +1,2516 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A powerful command-line interface for Apple Reminders built with Swift. Create, search, and manage reminders without leaving your terminal.">
-    <meta name="keywords"="="Apple Reminders CLI, Swift, macOS, terminal, command line, productivity, reminders">
-    <meta name="author" content="AungMyoKyaw">
-    <meta name="theme-color" content="#0a0a0b">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A powerful command-line interface for Apple Reminders built with Swift. Create, search, and manage reminders without leaving your terminal."
+    />
+    <meta
+      name="keywords"
+      content="Apple Reminders CLI, Swift, macOS, terminal, command line, productivity, reminders"
+    />
+    <meta name="author" content="AungMyoKyaw" />
+    <meta name="theme-color" content="#0a0a0a" />
 
     <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://github.com/AungMyoKyaw/apple-reminders-cli">
-    <meta property="og:title" content="Reminder - Apple Reminders CLI">
-    <meta property="og:description" content="A powerful command-line interface for Apple Reminders built with Swift. Create, search, and manage reminders without leaving your terminal.">
-    <meta property="og:image" content="https://repository-images.githubusercontent.com/672723677/b7e8e09e-cfc5-4e3d-b8a1-12c6d7e3e8af">
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://github.com/AungMyoKyaw/apple-reminders-cli"
+    />
+    <meta property="og:title" content="Reminder - Apple Reminders CLI" />
+    <meta
+      property="og:description"
+      content="A powerful command-line interface for Apple Reminders built with Swift. Create, search, and manage reminders without leaving your terminal."
+    />
+    <meta
+      property="og:image"
+      content="https://repository-images.githubusercontent.com/672723677/b7e8e09e-cfc5-4e3d-b8a1-12c6d7e3e8af"
+    />
 
     <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Reminder - Apple Reminders CLI">
-    <meta name="twitter:description" content="A powerful command-line interface for Apple Reminders built with Swift.">
-    <meta name="twitter:image" content="https://repository-images.githubusercontent.com/672723677/b7e8e09e-cfc5-4e3d-b8a1-12c6d7e3e8af">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Reminder - Apple Reminders CLI" />
+    <meta
+      name="twitter:description"
+      content="A powerful command-line interface for Apple Reminders built with Swift."
+    />
+    <meta
+      name="twitter:image"
+      content="https://repository-images.githubusercontent.com/672723677/b7e8e09e-cfc5-4e3d-b8a1-12c6d7e3e8af"
+    />
 
     <title>Reminder - Apple Reminders CLI</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2322d3ee' d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Favicon - Multiple formats for cross-browser support -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23FF6B4A'/%3E%3Cstop offset='100%25' stop-color='%23FF8F6B'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='7' fill='url(%23g)'/%3E%3Cpath d='M13.5 20.5L9 16l-1 1 5.5 5.5L24 12l-1-1-9.5 9.5z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAABdklEQVR4nO2WPUsDQRCGn1OxsbGwsLKwsLGxsLGy0P/gP/AP+AdsrGxsrGxsbCws/AcWFhb+A3tBQUVBRMQPPJjLJpfL5S7JBZwXFmbZnXlm9nZnF/7zZ7EEbAAngBd4BeaAJWAN2AEWgKfY+j3gC8gB18ARsFpJoFcJVGNTwBxQALaqEeiVQC0S5sUn4Bi4rZeAl0gLXBu7EIBPYB04BC6AnXoJeOm0wJUxxRY4SqMFXhIn4AXSApfGWBuegLVGA/AAXACPxjA7bC9bwD4wHME6JoC9Rl/hfwLwBfxdAnkjPAaMdSOAGSBvhBfBTDcC2AZyjXACGO1GAAXgHNgJCqxNIYB9oLcbASwD28BOUGA1CjlgDOiLSqw1AheBfuAL+G4ngJXoJTAKuMBXOwF4AY6BG6AvKrE6CWwCP8BQIwFsgC/gCLgEeqMSq5NAFigAQ8BHIwGsAx/AEXAFuFGJVU+gEHgFdoFboD8qseoJZIA7YA/4B+AfhF8k8L8bE9QAAAAASUVORK5CYII="
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAACXBIWXMAAAsTAAALEwEAmpwYAAAGkElEQVR4nO3dW4hVVRzH8d+MjqNpapqVlZVlF7PLQ0VFRVBRUdFDF6IoKoqCioqgIAoKoqALQRcKutwf6oIXuphlZWZlZVlZZmVZlpVl5WVsxvnt2Gfmrpk5a/b/f3Yf+H5gYGbOWXut/97+s9daey8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKD/hwFgDfDPYQDwBAAWJQCgN6ZsagAtAKAFHAD2AAQAmoAOQKsVAK4CHgBWq4ALAbsVACYDr1YBnAq4bQXQEuC1CnBawG0FYAngthXAhYDbCsBVwGkFEAi4rQAOBR4rgMOB1wrgVOC1Ahiv4LYCyAd4rQDGKritAM4EHiuACQtuK4AZCm4rgFGAywpgpoLLCiALuKwA8oHLCmCugtMKYKGCywpgkYLTCuBi4LECWKLgsQJYquCxArhUwWMFcKWCxwrgGgWPFcB1Ch4rgJsUPFYAtyl4rABWKHisAO5S8FgB3KfgsQJYpeCxAlik4LECeFjBYwVQAB5W8FgBPA54rACeUfBYATyr4LECeF7BYwXwsoLHCuANBY8VwDsKHiuAjxU8VgBfKHisAL5V8FgB/KLgsQL4XcFjBfCPgscKIDEeFsCBFYDXaQG0ALitAJYBblsB3AK4bQVwB+C2Fbgb8NgK4D7AYyuAhwGPrQBWAx5bAawFPLYC2AR4bAXwDuCxFcCngMdWAF8DHlsB/Ah4bAXwG+CxFcA/Ch5bASTGw2I/sALwOi2AFgC3FcAywG0rgFsAt63A3YDHVgD3AR5bATwMeGwFsBrw2ApgLeCxFcAmwGMrgHcAj60APgU8tgL4GvDYCuBHwGMrgN8Aj60A/lHw2AogMR4W+4EVgNdpAbQAuK0AlgFuWwHcArhtBe4GPLYCuA/w2ArgYcBjK4DVgMdWAGsBj60ANgEeWwG8A3hsBfAp4LEVwNeAx1YAPwIeWwH8BnhsBfCPgsdWAInxsNgPrAC8TgugBcBtBbAMcNsK4BbAbStwN+CxFcB9gMdWAA8DHlsBrAY8tgJYC3hsBbAJ8NgK4B3AYyuATwGPrQC+Bjy2AvgR8NgK4DfAYyuAfxQ8tgJIjIfFfmAF4HVaAC0AbiuAZYDbVgC3AG5bgbsBj60A7gM8tgJ4GPDYCmA14LEVwFrAYyuATYDHVgDvAB5bAXwKeGwF8DXgsRXAj4DHVgC/AR5bAfyj4LEVQCLhYbEAVABeH9AC+M/TAhga4N9CAYwJcG8hYiXgsRVAPuC2FcBzgNtWAC8AblsBvAy4bQXwJuC2FcDbgNdWAO8quK0A1im4rQA2KLitAD5ScFsBfKbgtgL4SsFtBfCdgtsK4EcFtxXAbwpuK4B/FNxWACnAYyuAPMBtK4C5gNtWAAsCHlsBLFfwWAFcreCxArhBwWMFcLuCxwrgXgWPFcBDCh4rgCcUPFYAaxQ8VgAvKHisAF5T8FgBvK3gsQL4UMFjBfClgscK4HsFjxXAzwoeK4A/FDxWAP8qeKwAkuJhEYAVgNdpAbQAuK0AlgFuWwHcArhtBe4GPLYC+P/AaQXwsILbCmC1gtsKYK2C2wpgk4LbCuAdBbcVwKcKbiuArxXcVgA/KritAH5TcFsB/KPgtgJIiodFAFYAXqcF0ALgtgJYBrhtBXAL4LYVuBvw2Arg/wOnFcDDCm4rgNUKbiuAtQpuK4BNCm4rgHcU3FYAnyi4rQC+UnBbAXyv4LYC+FnBbQXwh4LbCuBfBbcVQHI8LAKwAvA6LYAWALcVwDLAbSuAWwC3rcDdgMdWAP8fOK0AHlZwWwGsVnBbAaxVcFsBbFJwWwG8o+C2AvhEwW0F8JWC2wrgOwW3FcBPCm4rgD8U3FYA/yq4rQCS42ERgBWA12kBtAC4rQCWAW5bAdwCuG0F7gY8tgL4/8BpBfCwgtsKYLWC2wpgrYLbCmCTgtsK4B0FtxXAJwpuK4CvFNxWAN8puK0AflJwWwH8oeC2AvhXwW0FkBwPiwCsALxOC6AFwG0FsAxw2wrgFsBtK3A34LEVwP8HTiuAhxXcVgCrFdxWAGsV3FYAmxTcVgDvKLitAD5RcFsBfKXgtgL4TsFtBfCTgtsK4A8FtxXAvwpuK4DkeFgEYAXgdVoALQBuK4BlgNtWALcAbluBuwGPrQD+P3BaATys4LYDA+CxAggCHisAN+CxAnACHiuACQoeK4ApCh4rgOkKHiuAuQoeK4AFCh4rgKUKHiuAKxU8VgC3KnisAO5X8FgBPKrgsQJYq+CxAnhNwWMF8K6CxwrgUwWPFcDXCh4rgJ8VPFYAfyp4rAD+U/BYASTGw+L/AIw3tuzI9qvhAAAAAElFTkSuQmCC"
+    />
+    <link
+      rel="manifest"
+      href="data:application/json,%7B%22name%22%3A%22Reminder%20CLI%22%2C%22short_name%22%3A%22Reminder%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2032%2032%27%253E%253Crect%20width%3D%2732%27%20height%3D%2732%27%20rx%3D%277%27%20fill%3D%27%2523FF6B4A%27%2F%253E%253Cpath%20d%3D%27M13.5%2020.5L9%2016l-1%201%205.5%205.5L24%2012l-1-1-9.5%209.5z%27%20fill%3D%27white%27%2F%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%2C%22theme_color%22%3A%22%23050505%22%2C%22background_color%22%3A%22%23050505%22%2C%22display%22%3A%22standalone%22%7D"
+    />
+    <meta name="msapplication-TileColor" content="#050505" />
+    <meta name="msapplication-config" content="none" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
     <style>
+      :root {
+        /* Refined Dark Palette */
+        --bg-base: #050505;
+        --bg-elevated: #0a0a0a;
+        --bg-card: #0f0f0f;
+        --bg-card-hover: #141414;
+        --bg-inset: #080808;
+
+        --text-primary: #fafafa;
+        --text-secondary: #888;
+        --text-tertiary: #555;
+
+        /* Apple Reminders-inspired accent */
+        --accent: #ff6b4a;
+        --accent-soft: rgba(255, 107, 74, 0.15);
+        --accent-glow: rgba(255, 107, 74, 0.4);
+
+        --success: #34c759;
+        --success-soft: rgba(52, 199, 89, 0.15);
+
+        --border: #1a1a1a;
+        --border-light: #252525;
+
+        /* Typography */
+        --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: "JetBrains Mono", "SF Mono", monospace;
+
+        /* Spacing */
+        --gap: 12px;
+        --radius: 16px;
+        --radius-sm: 10px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: var(--font-sans);
+        background: var(--bg-base);
+        color: var(--text-primary);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Subtle grid texture */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+        background-size: 60px 60px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .content {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* Navigation */
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(5, 5, 5, 0.8);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .logo {
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+      }
+
+      .logo-icon {
+        width: 28px;
+        height: 28px;
+        background: var(--accent);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .logo-icon svg {
+        width: 16px;
+        height: 16px;
+        fill: white;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 32px;
+        list-style: none;
+      }
+
+      .nav-links a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+
+      .nav-links a:hover {
+        color: var(--text-primary);
+      }
+
+      .nav-cta {
+        background: var(--text-primary);
+        color: var(--bg-base);
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: opacity 0.2s;
+      }
+
+      .nav-cta:hover {
+        opacity: 0.9;
+      }
+
+      .mobile-menu-btn {
+        display: none;
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 8px;
+      }
+
+      /* Main Container */
+      main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 100px 24px 60px;
+      }
+
+      /* Bento Grid System */
+      .bento-grid {
+        display: grid;
+        gap: var(--gap);
+      }
+
+      .bento-hero {
+        grid-template-columns: 1fr 300px;
+        grid-template-rows: auto auto;
+      }
+
+      .bento-box {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+        transition:
+          background 0.3s,
+          border-color 0.3s;
+      }
+
+      .bento-box:hover {
+        background: var(--bg-card-hover);
+        border-color: var(--border-light);
+      }
+
+      .bento-box.inset {
+        background: var(--bg-inset);
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      .bento-box.accent-border {
+        border-color: rgba(255, 107, 74, 0.3);
+      }
+
+      .bento-box.accent-border:hover {
+        border-color: rgba(255, 107, 74, 0.5);
+      }
+
+      /* Hero Section */
+      .hero-main {
+        grid-column: 1 / 2;
+        grid-row: 1 / 3;
+        padding: 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 480px;
+      }
+
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        background: var(--success-soft);
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--success);
+        width: fit-content;
+        margin-bottom: 24px;
+      }
+
+      .hero-badge-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--success);
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .hero-title {
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+        margin-bottom: 20px;
+      }
+
+      .hero-title .accent {
+        color: var(--accent);
+      }
+
+      .hero-subtitle {
+        font-size: 1.125rem;
+        color: var(--text-secondary);
+        max-width: 460px;
+        margin-bottom: 32px;
+        line-height: 1.7;
+      }
+
+      .hero-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border-radius: var(--radius-sm);
+        font-size: 0.9375rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        filter: brightness(1.1);
+        transform: translateY(-1px);
+      }
+
+      .btn-secondary {
+        background: var(--bg-elevated);
+        color: var(--text-primary);
+        border: 1px solid var(--border-light);
+      }
+
+      .btn-secondary:hover {
+        background: var(--bg-card);
+        border-color: var(--border-light);
+      }
+
+      .btn svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      /* Stats Boxes */
+      .stat-box {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 24px;
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        font-family: var(--font-mono);
+        color: var(--accent);
+        margin-bottom: 4px;
+      }
+
+      .stat-label {
+        font-size: 0.8125rem;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      /* Terminal Box */
+      .terminal-box {
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .terminal-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        background: var(--bg-elevated);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .terminal-dots {
+        display: flex;
+        gap: 6px;
+      }
+
+      .terminal-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      .terminal-dot.red {
+        background: #ff5f57;
+      }
+      .terminal-dot.yellow {
+        background: #febc2e;
+      }
+      .terminal-dot.green {
+        background: #28c840;
+      }
+
+      .terminal-title {
+        flex: 1;
+        text-align: center;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--text-tertiary);
+      }
+
+      .terminal-body {
+        padding: 20px;
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        line-height: 1.9;
+        min-height: 180px;
+      }
+
+      .terminal-line {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 4px;
+      }
+
+      .terminal-prompt {
+        color: var(--success);
+      }
+
+      .terminal-command {
+        color: var(--text-primary);
+      }
+
+      .terminal-output {
+        color: var(--text-secondary);
+        padding-left: 20px;
+      }
+
+      .terminal-cursor {
+        display: inline-block;
+        width: 8px;
+        height: 16px;
+        background: var(--accent);
+        animation: blink 1s step-end infinite;
+        vertical-align: middle;
+      }
+
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* Section Headers */
+      .section {
+        margin-top: 80px;
+      }
+
+      .section-header {
+        margin-bottom: 32px;
+      }
+
+      .section-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--accent);
+        margin-bottom: 12px;
+      }
+
+      .section-label svg {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+      }
+
+      .section-title {
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+      }
+
+      .section-desc {
+        color: var(--text-secondary);
+        font-size: 1rem;
+      }
+
+      /* Features Bento */
+      .bento-features {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: auto auto;
+      }
+
+      .feature-box {
+        padding: 28px;
+      }
+
+      .feature-box.large {
+        grid-column: span 2;
+      }
+
+      .feature-icon {
+        width: 44px;
+        height: 44px;
+        background: var(--accent-soft);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        color: var(--accent);
+      }
+
+      .feature-icon svg {
+        width: 22px;
+        height: 22px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+      }
+
+      .feature-box h3 {
+        font-size: 1.0625rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .feature-box p {
+        color: var(--text-secondary);
+        font-size: 0.9375rem;
+        line-height: 1.6;
+      }
+
+      /* Comparison Section */
+      .comparison-grid {
+        grid-template-columns: 2fr 1fr;
+      }
+
+      .comparison-table-box {
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .comparison-row {
+        display: grid;
+        grid-template-columns: 1fr 100px 100px;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        align-items: center;
+        font-size: 0.9375rem;
+      }
+
+      .comparison-row:last-child {
+        border-bottom: none;
+      }
+
+      .comparison-row.header {
+        background: var(--bg-elevated);
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-tertiary);
+      }
+
+      .comparison-check {
+        color: var(--success);
+        text-align: center;
+        font-size: 1.125rem;
+      }
+
+      .comparison-cross {
+        color: var(--text-tertiary);
+        text-align: center;
+        font-size: 1.125rem;
+      }
+
+      .why-box {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 32px;
+      }
+
+      .why-box h3 {
+        font-size: 1.25rem;
+        margin-bottom: 16px;
+      }
+
+      .why-list {
+        list-style: none;
+      }
+
+      .why-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        color: var(--text-secondary);
+        font-size: 0.9375rem;
+        margin-bottom: 12px;
+      }
+
+      .why-list li::before {
+        content: "→";
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      /* Install Section */
+      .install-box {
+        padding: 32px;
+      }
+
+      .install-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .install-tab {
+        padding: 8px 16px;
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text-secondary);
+        font-family: inherit;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .install-tab:hover {
+        color: var(--text-primary);
+        border-color: var(--border-light);
+      }
+
+      .install-tab.active {
+        background: var(--bg-elevated);
+        color: var(--text-primary);
+        border-color: var(--border-light);
+      }
+
+      .install-content {
+        display: none;
+      }
+
+      .install-content.active {
+        display: block;
+      }
+
+      .code-block {
+        background: var(--bg-inset);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+      }
+
+      .code-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        background: var(--bg-elevated);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .code-lang {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--text-tertiary);
+      }
+
+      .copy-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: transparent;
+        border: none;
+        color: var(--text-tertiary);
+        font-family: inherit;
+        font-size: 0.75rem;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s;
+      }
+
+      .copy-btn:hover {
+        color: var(--text-primary);
+        background: var(--bg-card);
+      }
+
+      .copy-btn.copied {
+        color: var(--success);
+      }
+
+      .copy-btn svg {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+      }
+
+      .code-body {
+        padding: 16px;
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        line-height: 1.7;
+        overflow-x: auto;
+      }
+
+      .code-body code {
+        color: var(--text-primary);
+      }
+
+      .code-body pre {
+        margin: 0;
+        padding: 0;
+        font-family: inherit;
+        font-size: inherit;
+        line-height: inherit;
+      }
+
+      .code-comment {
+        color: var(--text-tertiary);
+      }
+
+      .install-note {
+        margin-top: 20px;
+        padding: 14px 16px;
+        background: rgba(255, 107, 74, 0.08);
+        border: 1px solid rgba(255, 107, 74, 0.2);
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+      }
+
+      .install-note strong {
+        color: var(--accent);
+      }
+
+      /* Examples Bento */
+      .bento-examples {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .example-box {
+        padding: 0;
+        overflow: hidden;
+      }
+
+      .example-box.wide {
+        grid-column: span 2;
+      }
+
+      .example-header {
+        padding: 10px 14px;
+        background: var(--bg-elevated);
+        border-bottom: 1px solid var(--border);
+        font-family: var(--font-mono);
+        font-size: 0.6875rem;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .example-body {
+        padding: 16px;
+      }
+
+      .example-command {
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        color: var(--accent);
+        margin-bottom: 8px;
+        word-break: break-all;
+      }
+
+      .example-desc {
+        font-size: 0.8125rem;
+        color: var(--text-tertiary);
+      }
+
+      /* Shortcuts Bento */
+      .bento-shortcuts {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .shortcut-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 24px 16px;
+      }
+
+      .shortcut-keys {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+
+      .key {
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-light);
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--text-primary);
+        min-width: 28px;
+      }
+
+      .shortcut-label {
+        font-size: 0.8125rem;
+        color: var(--text-tertiary);
+      }
+
+      /* Priority Reference */
+      .priority-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .priority-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 28px 16px;
+      }
+
+      .priority-symbol {
+        font-family: var(--font-mono);
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 8px;
+      }
+
+      .priority-name {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .priority-values {
+        font-size: 0.75rem;
+        color: var(--text-tertiary);
+        font-family: var(--font-mono);
+      }
+
+      /* Built With */
+      .built-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .built-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 32px;
+      }
+
+      .built-icon {
+        width: 56px;
+        height: 56px;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 14px;
+      }
+
+      .built-icon svg {
+        width: 28px;
+        height: 28px;
+        stroke: var(--accent);
+        stroke-width: 1.5;
+        fill: none;
+      }
+
+      .built-name {
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      .built-desc {
+        font-size: 0.8125rem;
+        color: var(--text-tertiary);
+        margin-top: 4px;
+      }
+
+      /* Footer */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 40px 24px;
+        margin-top: 80px;
+      }
+
+      .footer-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .footer-links {
+        display: flex;
+        gap: 32px;
+        list-style: none;
+      }
+
+      .footer-links a {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: color 0.2s;
+      }
+
+      .footer-links a:hover {
+        color: var(--text-primary);
+      }
+
+      .footer-text {
+        color: var(--text-tertiary);
+        font-size: 0.8125rem;
+      }
+
+      /* Animations */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .animate-in {
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+
+      .delay-1 {
+        animation-delay: 0.1s;
+        opacity: 0;
+      }
+      .delay-2 {
+        animation-delay: 0.2s;
+        opacity: 0;
+      }
+      .delay-3 {
+        animation-delay: 0.3s;
+        opacity: 0;
+      }
+      .delay-4 {
+        animation-delay: 0.4s;
+        opacity: 0;
+      }
+      .delay-5 {
+        animation-delay: 0.5s;
+        opacity: 0;
+      }
+
+      /* ===== RESPONSIVE DESIGN ===== */
+
+      /* Large tablets and small desktops */
+      @media (max-width: 1024px) {
         :root {
-            --bg-primary: #0a0a0b;
-            --bg-secondary: #111113;
-            --bg-tertiary: #1a1a1d;
-            --bg-elevated: #222225;
-            --text-primary: #fafafa;
-            --text-secondary: #a1a1aa;
-            --text-muted: #71717a;
-            --accent-blue: #3b82f6;
-            --accent-cyan: #22d3ee;
-            --accent-green: #4ade80;
-            --accent-orange: #fb923c;
-            --accent-purple: #a78bfa;
-            --border: #27272a;
-            --border-light: #3f3f46;
-            --glow-blue: rgba(59, 130, 246, 0.15);
-            --glow-cyan: rgba(34, 211, 238, 0.15);
-            --terminal-bg: #0d0d0f;
-            --terminal-border: #2a2a2d;
+          --gap: 10px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        main {
+          padding: 90px 20px 50px;
         }
 
-        html {
-            scroll-behavior: smooth;
+        .bento-hero {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto;
         }
 
-        body {
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
+        .hero-main {
+          grid-column: 1;
+          grid-row: 1;
+          min-height: auto;
+          padding: 40px 32px;
         }
 
-        /* Scroll Progress Bar */
-        .scroll-progress {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 0%;
-            height: 2px;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
-            z-index: 1001;
-            transition: width 0.1s ease-out;
+        /* Stats become horizontal row below hero */
+        .bento-hero .stat-box {
+          display: none;
         }
 
-        /* Ambient background */
-        .ambient-bg {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
+        .bento-features {
+          grid-template-columns: repeat(2, 1fr);
         }
 
-        .ambient-bg::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(ellipse at 30% 20%, var(--glow-blue) 0%, transparent 50%),
-                        radial-gradient(ellipse at 70% 80%, var(--glow-cyan) 0%, transparent 50%);
-            animation: ambientFloat 20s ease-in-out infinite;
+        .feature-box.large {
+          grid-column: span 2;
         }
 
-        @keyframes ambientFloat {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(5%, 5%) rotate(1deg); }
-            66% { transform: translate(-5%, 3%) rotate(-1deg); }
+        .comparison-grid {
+          grid-template-columns: 1fr;
         }
 
-        .content {
-            position: relative;
-            z-index: 1;
+        .why-box {
+          order: -1;
         }
 
-        /* Navigation */
+        .bento-examples {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .example-box.wide {
+          grid-column: span 2;
+        }
+
+        .bento-shortcuts {
+          grid-template-columns: repeat(4, 1fr);
+        }
+
+        .priority-grid {
+          grid-template-columns: repeat(4, 1fr);
+        }
+
+        .built-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      /* Tablets */
+      @media (max-width: 768px) {
+        :root {
+          --gap: 8px;
+          --radius: 12px;
+          --radius-sm: 8px;
+        }
+
         nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            background: rgba(10, 10, 11, 0.8);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .logo {
-            font-family: 'IBM Plex Mono', monospace;
-            font-weight: 600;
-            font-size: 1.25rem;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logo-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .logo-icon svg {
-            width: 14px;
-            height: 14px;
-            fill: white;
-        }
-
-        /* Lucide Icons */
-        i[data-lucide] {
-            width: 16px;
-            height: 16px;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            fill: none;
+          padding: 12px 16px;
         }
 
         .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: var(--bg-elevated);
+          border-bottom: 1px solid var(--border);
+          flex-direction: column;
+          padding: 12px;
+          gap: 4px;
+        }
+
+        .nav-links.active {
+          display: flex;
+          animation: slideDown 0.2s ease-out;
+        }
+
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .nav-links li {
+          width: 100%;
         }
 
         .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: color 0.2s;
+          display: block;
+          padding: 14px 16px;
+          border-radius: 8px;
+          font-size: 1rem;
         }
 
-        .nav-links a:hover {
-            color: var(--text-primary);
+        .nav-links a:hover,
+        .nav-links a:active {
+          background: var(--bg-card);
         }
 
         .nav-cta {
-            background: var(--text-primary);
-            color: var(--bg-primary);
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: transform 0.2s, box-shadow 0.2s;
+          display: none;
         }
 
-        .nav-cta:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+        .mobile-menu-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 44px;
+          height: 44px;
+          border-radius: 8px;
+          -webkit-tap-highlight-color: transparent;
         }
 
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 8rem 2rem 4rem;
-            text-align: center;
+        .mobile-menu-btn:active {
+          background: var(--bg-card);
+        }
+
+        main {
+          padding: 76px 16px 40px;
+        }
+
+        .hero-main {
+          padding: 28px 20px;
         }
 
         .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.375rem 0.875rem;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 100px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
-            animation: fadeInUp 0.6s ease-out, badgeGlow 3s ease-in-out infinite;
+          font-size: 0.6875rem;
+          padding: 5px 10px;
+          margin-bottom: 20px;
         }
 
-        @keyframes badgeGlow {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
-            50% { box-shadow: 0 0 20px 5px rgba(74, 222, 128, 0.1); }
-        }
-
-        .badge-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--accent-green);
-            border-radius: 50%;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.2); }
-        }
-
-        .hero h1 {
-            font-size: clamp(2.5rem, 6vw, 4.5rem);
-            font-weight: 800;
-            line-height: 1.1;
-            letter-spacing: -0.03em;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(180deg, var(--text-primary) 0%, var(--text-secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: fadeInUp 0.6s ease-out 0.1s both;
-        }
-
-        .hero h1 span {
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .hero-title {
+          font-size: 1.875rem;
+          margin-bottom: 16px;
         }
 
         .hero-subtitle {
-            font-size: 1.125rem;
-            color: var(--text-secondary);
-            max-width: 540px;
-            margin-bottom: 2.5rem;
-            animation: fadeInUp 0.6s ease-out 0.2s both;
+          font-size: 0.9375rem;
+          margin-bottom: 24px;
+          line-height: 1.6;
         }
 
         .hero-actions {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            justify-content: center;
-            animation: fadeInUp 0.6s ease-out 0.3s both;
+          flex-direction: column;
+          gap: 10px;
         }
 
         .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.875rem 1.5rem;
-            border-radius: 8px;
-            font-size: 0.9375rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
+          width: 100%;
+          justify-content: center;
+          padding: 14px 20px;
+          font-size: 0.9375rem;
+          -webkit-tap-highlight-color: transparent;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent-blue), #2563eb);
-            color: white;
-            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.4);
-        }
-
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--bg-elevated);
-            border-color: var(--border-light);
-        }
-
-        /* Terminal */
-        .terminal-wrapper {
-            margin-top: 4rem;
-            animation: fadeInUp 0.6s ease-out 0.4s both;
-        }
-
-        .terminal {
-            background: var(--terminal-bg);
-            border: 1px solid var(--terminal-border);
-            border-radius: 12px;
-            overflow: hidden;
-            max-width: 680px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
-                        0 0 0 1px rgba(255, 255, 255, 0.05);
-        }
-
-        .terminal-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1rem;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--terminal-border);
-        }
-
-        .terminal-buttons {
-            display: flex;
-            gap: 0.375rem;
-        }
-
-        .terminal-btn {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .terminal-btn.close { background: #ff5f57; }
-        .terminal-btn.min { background: #ffbd2e; }
-        .terminal-btn.max { background: #28c840; }
-
-        .terminal-title {
-            flex: 1;
-            text-align: center;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .terminal-body {
-            padding: 1.5rem;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.8125rem;
-            line-height: 1.8;
-            min-height: 200px;
-        }
-
-        .terminal-line {
-            display: flex;
-            gap: 0.75rem;
-            opacity: 0;
-            animation: terminalFadeIn 0.3s ease-out forwards;
-        }
-
-        .terminal-line.delay-1 { animation-delay: 0.5s; }
-        .terminal-line.delay-2 { animation-delay: 1.2s; }
-        .terminal-line.delay-3 { animation-delay: 1.7s; }
-        .terminal-line.delay-4 { animation-delay: 2.2s; }
-        .terminal-line.delay-5 { animation-delay: 2.7s; }
-        .terminal-line.delay-6 { animation-delay: 3.2s; }
-        .terminal-line.delay-7 { animation-delay: 3.7s; }
-
-        @keyframes terminalFadeIn {
-            to { opacity: 1; }
-        }
-
-        .typing-text {
-            overflow: hidden;
-            white-space: nowrap;
-            border-right: 2px solid var(--accent-cyan);
-            animation: typing 2s steps(60) forwards, blinkCaret 0.75s step-end infinite;
-        }
-
-        @keyframes typing {
-            from { width: 0; }
-            to { width: 100%; }
-        }
-
-        @keyframes blinkCaret {
-            50% { border-color: transparent; }
-        }
-
-        .terminal-prompt {
-            color: var(--accent-green);
-            white-space: nowrap;
-        }
-
-        .terminal-command {
-            color: var(--text-primary);
-        }
-
-        .terminal-output {
-            color: var(--text-secondary);
-            margin-left: 0;
-        }
-
-        .cursor {
-            display: inline-block;
-            width: 8px;
-            height: 16px;
-            background: var(--accent-cyan);
-            animation: blink 1s step-end infinite;
-            vertical-align: middle;
-            margin-left: 2px;
-        }
-
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Scroll Reveal Animations */
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .reveal-stagger > * {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-        }
-
-        .reveal-stagger.visible > *:nth-child(1) { transition-delay: 0s; }
-        .reveal-stagger.visible > *:nth-child(2) { transition-delay: 0.1s; }
-        .reveal-stagger.visible > *:nth-child(3) { transition-delay: 0.2s; }
-        .reveal-stagger.visible > *:nth-child(4) { transition-delay: 0.3s; }
-        .reveal-stagger.visible > *:nth-child(5) { transition-delay: 0.4s; }
-        .reveal-stagger.visible > *:nth-child(6) { transition-delay: 0.5s; }
-        .reveal-stagger.visible > * {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Sections */
-        section {
-            padding: 6rem 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
+        .section {
+          margin-top: 56px;
         }
 
         .section-header {
-            text-align: center;
-            margin-bottom: 4rem;
+          margin-bottom: 24px;
         }
 
         .section-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            color: var(--accent-cyan);
-            margin-bottom: 1rem;
+          font-size: 0.6875rem;
+          margin-bottom: 10px;
         }
 
         .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 1rem;
+          font-size: 1.5rem;
+          margin-bottom: 6px;
         }
 
         .section-desc {
-            color: var(--text-secondary);
-            font-size: 1.125rem;
-            max-width: 540px;
-            margin: 0 auto;
+          font-size: 0.9375rem;
         }
 
-        /* Features Grid */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
+        /* Features - 2 column on tablet, 1 on phone */
+        .bento-features {
+          grid-template-columns: repeat(2, 1fr);
         }
 
-        .feature-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.75rem;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
+        .feature-box {
+          padding: 20px;
         }
 
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, transparent 0%, rgba(59, 130, 246, 0.03) 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .feature-card:hover {
-            border-color: var(--border-light);
-            transform: translateY(-4px);
-        }
-
-        .feature-card:hover::before {
-            opacity: 1;
+        .feature-box.large {
+          grid-column: span 2;
         }
 
         .feature-icon {
-            width: 48px;
-            height: 48px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1rem;
-            color: var(--accent-cyan);
+          width: 40px;
+          height: 40px;
+          margin-bottom: 12px;
         }
 
         .feature-icon svg {
-            width: 24px;
-            height: 24px;
+          width: 20px;
+          height: 20px;
         }
 
-        .feature-icon i,
-        .use-case-icon i {
-            width: 24px;
-            height: 24px;
+        .feature-box h3 {
+          font-size: 1rem;
         }
 
-        .feature-card h3 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+        .feature-box p {
+          font-size: 0.875rem;
         }
 
-        .feature-card p {
-            color: var(--text-secondary);
-            font-size: 0.9375rem;
-        }
-
-        /* Comparison Table */
-        .comparison-table {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
+        /* Comparison */
+        .comparison-table-box {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
         }
 
         .comparison-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border);
-            align-items: center;
-        }
-
-        .comparison-row:last-child {
-            border-bottom: none;
+          grid-template-columns: 1fr 70px 70px;
+          font-size: 0.8125rem;
+          padding: 12px 14px;
+          min-width: 320px;
         }
 
         .comparison-row.header {
-            background: var(--bg-tertiary);
-            font-weight: 600;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
+          font-size: 0.6875rem;
         }
 
-        .comparison-feature {
-            font-weight: 500;
+        .why-box {
+          padding: 24px 20px;
         }
 
-        .comparison-check {
-            color: var(--accent-green);
-            font-size: 1.25rem;
-            text-align: center;
+        .why-box h3 {
+          font-size: 1.125rem;
         }
 
-        .comparison-cross {
-            color: var(--text-muted);
-            font-size: 1.25rem;
-            text-align: center;
+        .why-list li {
+          font-size: 0.875rem;
+          margin-bottom: 10px;
         }
 
-        /* Keyboard Shortcuts */
-        .shortcuts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1rem;
-        }
-
-        .shortcut-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 1rem 1.25rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .shortcut-action {
-            font-size: 0.9375rem;
-            color: var(--text-secondary);
-        }
-
-        .shortcut-keys {
-            display: flex;
-            gap: 0.25rem;
-        }
-
-        .key {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 0.25rem 0.5rem;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--text-primary);
-            min-width: 24px;
-            text-align: center;
-        }
-
-        /* Use Cases */
-        .use-cases-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .use-case-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            transition: all 0.3s;
-        }
-
-        .use-case-card:hover {
-            border-color: var(--border-light);
-            transform: translateY(-2px);
-        }
-
-        .use-case-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1rem;
-        }
-
-        .use-case-icon svg {
-            width: 20px;
-            height: 20px;
-            color: white;
-        }
-
-        .use-case-card h4 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .use-case-card p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            line-height: 1.6;
-        }
-
-        /* Installation Section */
-        .install-section {
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
+        /* Install */
+        .install-box {
+          padding: 24px 20px;
         }
 
         .install-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
+          gap: 6px;
+          margin-bottom: 16px;
         }
 
         .install-tab {
-            padding: 0.625rem 1.25rem;
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-secondary);
-            font-family: inherit;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .install-tab:hover {
-            color: var(--text-primary);
-            border-color: var(--border-light);
-        }
-
-        .install-tab.active {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            border-color: var(--border-light);
-        }
-
-        .install-content {
-            display: none;
-        }
-
-        .install-content.active {
-            display: block;
-        }
-
-        .code-block {
-            background: var(--terminal-bg);
-            border: 1px solid var(--terminal-border);
-            border-radius: 10px;
-            overflow: hidden;
-            max-width: 680px;
-            margin: 0 auto;
-        }
-
-        .code-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.75rem 1rem;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--terminal-border);
-        }
-
-        .code-lang {
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .copy-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 0.25rem;
-            border-radius: 4px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.375rem;
-        }
-
-        .copy-btn:hover {
-            color: var(--text-primary);
-            background: var(--bg-tertiary);
-        }
-
-        .copy-btn.copied {
-            color: var(--accent-green);
+          padding: 10px 14px;
+          font-size: 0.8125rem;
+          flex: 1;
+          text-align: center;
         }
 
         .code-body {
-            padding: 0.75rem 1rem;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.8125rem;
-            line-height: 1.6;
-            overflow-x: auto;
-            white-space: pre-wrap;
+          padding: 14px;
+          font-size: 0.75rem;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
         }
 
         .code-body code {
-            color: var(--text-primary);
-            display: block;
-            margin: 0;
-            padding: 0;
+          display: block;
+          min-width: max-content;
         }
 
-        .code-comment {
-            color: var(--text-muted);
+        .install-note {
+          margin-top: 16px;
+          padding: 12px 14px;
+          font-size: 0.8125rem;
         }
 
-        .code-keyword {
-            color: var(--accent-purple);
+        /* Examples - 2 columns */
+        .bento-examples {
+          grid-template-columns: repeat(2, 1fr);
         }
 
-        .code-string {
-            color: var(--accent-green);
-        }
-
-        /* Examples Section */
-        .examples-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1rem;
-        }
-
-        .example-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
+        .example-box.wide {
+          grid-column: span 1;
         }
 
         .example-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.75rem 1rem;
-            background: var(--bg-tertiary);
-            border-bottom: 1px solid var(--border);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--text-muted);
+          padding: 8px 12px;
+          font-size: 0.625rem;
         }
 
         .example-body {
-            padding: 1rem;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.8125rem;
+          padding: 14px;
         }
 
         .example-command {
-            color: var(--accent-cyan);
+          font-size: 0.75rem;
+          margin-bottom: 6px;
         }
 
         .example-desc {
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            margin-top: 0.75rem;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 0.75rem;
         }
 
-        .quick-copy-btn {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            background: var(--bg-elevated);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 0.25rem 0.5rem;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 0.6875rem;
-            font-family: inherit;
-            transition: all 0.2s;
-            opacity: 0;
+        /* Shortcuts - 2 columns */
+        .bento-shortcuts {
+          grid-template-columns: repeat(2, 1fr);
         }
 
-        .example-card:hover .quick-copy-btn {
-            opacity: 1;
+        .shortcut-box {
+          padding: 20px 12px;
         }
 
-        .quick-copy-btn:hover {
-            color: var(--text-primary);
-            border-color: var(--border-light);
+        .key {
+          padding: 5px 8px;
+          font-size: 0.6875rem;
         }
 
-        .quick-copy-btn.copied {
-            color: var(--accent-green);
-            border-color: var(--accent-green);
+        .shortcut-label {
+          font-size: 0.75rem;
         }
 
-        /* Priority Reference */
-        .priority-table {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-            max-width: 500px;
-            margin: 0 auto;
+        /* Priority - 2 columns */
+        .priority-grid {
+          grid-template-columns: repeat(2, 1fr);
         }
 
-        .priority-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.9375rem;
-        }
-
-        .priority-row:last-child {
-            border-bottom: none;
-        }
-
-        .priority-row.header {
-            background: var(--bg-tertiary);
-            font-weight: 600;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        .priority-box {
+          padding: 24px 14px;
         }
 
         .priority-symbol {
-            font-family: 'IBM Plex Mono', monospace;
+          font-size: 1.25rem;
+        }
+
+        .priority-name {
+          font-size: 0.875rem;
+        }
+
+        .priority-values {
+          font-size: 0.6875rem;
+        }
+
+        /* Built with - stay 3 columns */
+        .built-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        .built-box {
+          padding: 24px 12px;
+        }
+
+        .built-icon {
+          width: 48px;
+          height: 48px;
+          margin-bottom: 10px;
+        }
+
+        .built-icon svg {
+          width: 24px;
+          height: 24px;
+        }
+
+        .built-name {
+          font-size: 0.875rem;
+        }
+
+        .built-desc {
+          font-size: 0.75rem;
+        }
+
+        /* Terminal */
+        .terminal-body {
+          padding: 16px;
+          font-size: 0.75rem;
+          line-height: 1.8;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .terminal-line,
+        .terminal-output {
+          min-width: max-content;
         }
 
         /* Footer */
         footer {
-            border-top: 1px solid var(--border);
-            padding: 3rem 2rem;
-            text-align: center;
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
+          padding: 32px 16px;
+          margin-top: 60px;
         }
 
         .footer-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
+          flex-direction: row;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 20px;
         }
 
         .footer-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: color 0.2s;
-        }
-
-        .footer-links a:hover {
-            color: var(--text-primary);
+          font-size: 0.875rem;
         }
 
         .footer-text {
-            color: var(--text-muted);
-            font-size: 0.8125rem;
+          font-size: 0.75rem;
+          text-align: center;
+        }
+      }
+
+      /* Mobile phones */
+      @media (max-width: 480px) {
+        :root {
+          --gap: 6px;
         }
 
-        /* Back to Top Button */
-        .back-to-top {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 48px;
-            height: 48px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-            z-index: 99;
-            color: var(--text-secondary);
+        main {
+          padding: 72px 12px 32px;
         }
 
-        .back-to-top.visible {
-            opacity: 1;
-            visibility: visible;
+        .hero-main {
+          padding: 24px 16px;
         }
 
-        .back-to-top:hover {
-            background: var(--bg-tertiary);
-            border-color: var(--border-light);
-            color: var(--text-primary);
-            transform: translateY(-2px);
+        .hero-badge {
+          font-size: 0.625rem;
+          padding: 4px 8px;
         }
 
-        .back-to-top svg {
-            width: 20px;
-            height: 20px;
+        .hero-title {
+          font-size: 1.625rem;
+          line-height: 1.15;
         }
 
-        /* Mobile Menu Toggle */
-        .mobile-menu-btn {
-            display: none;
-            background: transparent;
-            border: none;
-            color: var(--text-primary);
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 6px;
+        .hero-subtitle {
+          font-size: 0.875rem;
         }
 
-        .mobile-menu-btn:hover {
-            background: var(--bg-tertiary);
+        .btn {
+          padding: 12px 16px;
+          font-size: 0.875rem;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            nav {
-                padding: 0.75rem 1rem;
-            }
-
-            .mobile-menu-btn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .nav-links {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--bg-secondary);
-                border-bottom: 1px solid var(--border);
-                flex-direction: column;
-                padding: 1rem;
-                gap: 0;
-            }
-
-            .nav-links.active {
-                display: flex;
-            }
-
-            .nav-links li {
-                width: 100%;
-            }
-
-            .nav-links a {
-                display: block;
-                padding: 0.75rem 1rem;
-                border-radius: 6px;
-            }
-
-            .nav-links a:hover {
-                background: var(--bg-tertiary);
-            }
-
-            .nav-cta {
-                display: none;
-            }
-
-            .hero {
-                padding: 6rem 1.25rem 3rem;
-                min-height: auto;
-            }
-
-            .hero-badge {
-                font-size: 0.6875rem;
-                padding: 0.3125rem 0.75rem;
-                margin-bottom: 1.5rem;
-            }
-
-            .hero h1 {
-                font-size: 2.25rem;
-                line-height: 1.15;
-            }
-
-            .hero-subtitle {
-                font-size: 1rem;
-                margin-bottom: 2rem;
-            }
-
-            .hero-actions {
-                flex-direction: column;
-                width: 100%;
-                max-width: 280px;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-                padding: 0.875rem 1.25rem;
-            }
-
-            .terminal-wrapper {
-                margin-top: 2.5rem;
-            }
-
-            .terminal {
-                border-radius: 10px;
-            }
-
-            .terminal-body {
-                padding: 1rem;
-                font-size: 0.75rem;
-                overflow-x: auto;
-            }
-
-            .terminal-command {
-                overflow-wrap: break-word;
-                word-break: break-all;
-            }
-
-            .typing-text {
-                white-space: normal;
-                animation: none;
-            }
-
-            section {
-                padding: 4rem 1.25rem;
-            }
-
-            .section-header {
-                margin-bottom: 2.5rem;
-            }
-
-            .section-title {
-                font-size: 1.875rem;
-            }
-
-            .section-desc {
-                font-size: 1rem;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .feature-card {
-                padding: 1.25rem;
-            }
-
-            .feature-icon {
-                width: 42px;
-                height: 42px;
-            }
-
-            .feature-icon svg,
-            .feature-icon i,
-            .use-case-icon i {
-                width: 20px;
-                height: 20px;
-            }
-
-            .feature-card h3 {
-                font-size: 1rem;
-            }
-
-            .feature-card p {
-                font-size: 0.875rem;
-            }
-
-            .comparison-table {
-                overflow-x: auto;
-            }
-
-            .comparison-row {
-                grid-template-columns: 1.5fr 1fr 1fr;
-                padding: 0.875rem 1rem;
-                font-size: 0.8125rem;
-                min-width: 400px;
-            }
-
-            .install-tabs {
-                flex-direction: row;
-                width: 100%;
-            }
-
-            .install-tab {
-                flex: 1;
-                text-align: center;
-                padding: 0.625rem 1rem;
-                font-size: 0.8125rem;
-            }
-
-            .code-block {
-                border-radius: 10px;
-            }
-
-            .code-body {
-                padding: 1rem;
-                font-size: 0.75rem;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .code-body code {
-                display: block;
-                min-width: max-content;
-            }
-
-            .examples-grid {
-                grid-template-columns: 1fr;
-                gap: 0.875rem;
-            }
-
-            .example-body {
-                padding: 0.875rem;
-                font-size: 0.75rem;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .example-command {
-                display: block;
-                min-width: max-content;
-            }
-
-            .quick-copy-btn {
-                opacity: 1;
-                position: static;
-                margin-top: 0.5rem;
-                width: 100%;
-            }
-
-            .shortcuts-grid,
-            .use-cases-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .priority-table {
-                max-width: 100%;
-            }
-
-            .priority-row {
-                grid-template-columns: 1.2fr 0.8fr 0.8fr;
-                padding: 0.875rem 1rem;
-                font-size: 0.875rem;
-            }
-
-            .footer-links {
-                flex-direction: column;
-                gap: 1rem;
-                align-items: center;
-            }
-
-            .footer-links a {
-                font-size: 0.9375rem;
-            }
-
-            .back-to-top {
-                bottom: 1rem;
-                right: 1rem;
-                width: 42px;
-                height: 42px;
-            }
+        .section {
+          margin-top: 48px;
         }
 
-        @media (max-width: 480px) {
-            .hero h1 {
-                font-size: 1.875rem;
-            }
-
-            .section-title {
-                font-size: 1.625rem;
-            }
-
-            .priority-row {
-                grid-template-columns: 1fr 0.6fr 0.6fr;
-                padding: 0.75rem 0.75rem;
-                font-size: 0.8125rem;
-                gap: 0.25rem;
-            }
-
-            .terminal-command,
-            .example-command {
-                font-size: 0.6875rem;
-            }
+        .section-title {
+          font-size: 1.375rem;
         }
 
-        @media (max-width: 380px) {
-            .hero h1 {
-                font-size: 1.625rem;
-            }
-
-            .btn {
-                font-size: 0.875rem;
-            }
+        /* Features - 1 column on small phones */
+        .bento-features {
+          grid-template-columns: 1fr;
         }
+
+        .feature-box.large {
+          grid-column: span 1;
+        }
+
+        /* Examples - 1 column */
+        .bento-examples {
+          grid-template-columns: 1fr;
+        }
+
+        /* Shortcuts - 2 columns still looks good */
+        .bento-shortcuts {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        /* Priority - 2 columns */
+        .priority-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        /* Built with - 1 column */
+        .built-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .built-box {
+          flex-direction: row;
+          justify-content: flex-start;
+          gap: 16px;
+          padding: 20px;
+          text-align: left;
+        }
+
+        .built-icon {
+          margin-bottom: 0;
+          flex-shrink: 0;
+        }
+
+        .built-box > div:last-child {
+          display: flex;
+          flex-direction: column;
+        }
+
+        /* Comparison scroll hint */
+        .comparison-table-box::after {
+          content: "";
+          position: absolute;
+          right: 0;
+          top: 0;
+          bottom: 0;
+          width: 40px;
+          background: linear-gradient(90deg, transparent, var(--bg-card));
+          pointer-events: none;
+          opacity: 0.8;
+        }
+
+        .comparison-row {
+          grid-template-columns: 1fr 60px 60px;
+          font-size: 0.75rem;
+          padding: 10px 12px;
+        }
+
+        .comparison-check,
+        .comparison-cross {
+          font-size: 1rem;
+        }
+
+        /* Footer */
+        .footer-links {
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .logo {
+          font-size: 0.9375rem;
+        }
+
+        .logo-icon {
+          width: 24px;
+          height: 24px;
+        }
+
+        .logo-icon svg {
+          width: 14px;
+          height: 14px;
+        }
+      }
+
+      /* Extra small phones */
+      @media (max-width: 360px) {
+        main {
+          padding: 70px 10px 28px;
+        }
+
+        .hero-title {
+          font-size: 1.5rem;
+        }
+
+        .hero-subtitle {
+          font-size: 0.8125rem;
+        }
+
+        .section-title {
+          font-size: 1.25rem;
+        }
+
+        .bento-shortcuts,
+        .priority-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .comparison-row {
+          grid-template-columns: 1fr 50px 50px;
+          font-size: 0.6875rem;
+        }
+      }
+
+      /* Touch device optimizations */
+      @media (hover: none) and (pointer: coarse) {
+        .bento-box {
+          transition: none;
+        }
+
+        .bento-box:hover {
+          background: var(--bg-card);
+          border-color: var(--border);
+        }
+
+        .bento-box:active {
+          background: var(--bg-card-hover);
+          border-color: var(--border-light);
+        }
+
+        .btn:hover {
+          transform: none;
+          filter: none;
+        }
+
+        .btn:active {
+          transform: scale(0.98);
+          opacity: 0.9;
+        }
+
+        .nav-links a:hover {
+          background: transparent;
+        }
+
+        .nav-links a:active {
+          background: var(--bg-card);
+        }
+      }
+
+      /* Landscape phone adjustments */
+      @media (max-height: 500px) and (orientation: landscape) {
+        .hero-main {
+          min-height: auto;
+          padding: 20px;
+        }
+
+        .hero-title {
+          font-size: 1.5rem;
+          margin-bottom: 12px;
+        }
+
+        .hero-subtitle {
+          margin-bottom: 16px;
+        }
+
+        .hero-actions {
+          flex-direction: row;
+        }
+
+        .btn {
+          width: auto;
+          flex: 1;
+        }
+      }
+
+      /* Safe area insets for notched phones */
+      @supports (padding: max(0px)) {
+        nav {
+          padding-left: max(16px, env(safe-area-inset-left));
+          padding-right: max(16px, env(safe-area-inset-right));
+        }
+
+        main {
+          padding-left: max(16px, env(safe-area-inset-left));
+          padding-right: max(16px, env(safe-area-inset-right));
+        }
+
+        footer {
+          padding-left: max(16px, env(safe-area-inset-left));
+          padding-right: max(16px, env(safe-area-inset-right));
+          padding-bottom: max(40px, env(safe-area-inset-bottom));
+        }
+      }
+
+      /* Reduced motion preference */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+
+        html {
+          scroll-behavior: auto;
+        }
+      }
+
+      /* Dark mode is default, but handle light mode preference */
+      @media (prefers-color-scheme: light) {
+        /* Keep dark - this is intentional dark-mode-only design */
+      }
+
+      /* High contrast mode */
+      @media (prefers-contrast: more) {
+        :root {
+          --border: #333;
+          --border-light: #444;
+          --text-secondary: #aaa;
+          --text-tertiary: #888;
+        }
+
+        .bento-box {
+          border-width: 2px;
+        }
+      }
+
+      /* Print styles */
+      @media print {
+        body::before,
+        nav,
+        .mobile-menu-btn,
+        .hero-actions,
+        .install-tabs,
+        .copy-btn,
+        footer {
+          display: none !important;
+        }
+
+        body {
+          background: white;
+          color: black;
+        }
+
+        .bento-box {
+          border: 1px solid #ccc;
+          background: #f9f9f9;
+          break-inside: avoid;
+        }
+
+        .terminal-body,
+        .code-body {
+          background: #f0f0f0;
+        }
+
+        a {
+          color: black;
+          text-decoration: underline;
+        }
+      }
     </style>
-</head>
-<body>
-    <!-- Scroll Progress Bar -->
-    <div class="scroll-progress" id="scrollProgress"></div>
-
-    <!-- Back to Top Button -->
-    <button class="back-to-top" id="backToTop" aria-label="Back to top">
-        <i data-lucide="chevron-up"></i>
-    </button>
-
-    <div class="ambient-bg"></div>
-
+  </head>
+  <body>
     <nav>
-        <div class="logo">
-            <div class="logo-icon">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                </svg>
-            </div>
-            reminder
+      <a href="#" class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"
+            />
+          </svg>
         </div>
-        <ul class="nav-links">
-            <li><a href="#features">Features</a></li>
-            <li><a href="#comparison">Compare</a></li>
-            <li><a href="#install">Install</a></li>
-            <li><a href="#examples">Examples</a></li>
-            <li><a href="#shortcuts">Shortcuts</a></li>
-        </ul>
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <a href="https://github.com/AungMyoKyaw/apple-reminders-cli" class="nav-cta" target="_blank">GitHub</a>
-            <button class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="3" y1="6" x2="21" y2="6"/>
-                    <line x1="3" y1="12" x2="21" y2="12"/>
-                    <line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
-            </button>
-        </div>
+        reminder
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#comparison">Compare</a></li>
+        <li><a href="#install">Install</a></li>
+        <li><a href="#examples">Examples</a></li>
+      </ul>
+      <div style="display: flex; align-items: center; gap: 12px">
+        <a
+          href="https://github.com/AungMyoKyaw/apple-reminders-cli"
+          class="nav-cta"
+          target="_blank"
+          >GitHub</a
+        >
+        <button class="mobile-menu-btn" aria-label="Toggle menu">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+      </div>
     </nav>
 
     <div class="content">
-        <section class="hero">
+      <main>
+        <!-- Hero Bento Grid -->
+        <div class="bento-grid bento-hero animate-in">
+          <div class="bento-box hero-main">
             <div class="hero-badge">
-                <span class="badge-dot"></span>
-                v3.0.2 — Full feature parity
+              <span class="hero-badge-dot"></span>
+              v3.0.4 — Full feature parity
             </div>
-            <h1>Apple Reminders<br><span>for your terminal</span></h1>
+            <h1 class="hero-title">
+              Apple Reminders<br /><span class="accent">for your terminal</span>
+            </h1>
             <p class="hero-subtitle">
-                A powerful command-line interface for Apple Reminders built with Swift.
-                Create, search, and manage reminders without leaving your terminal.
+              A powerful CLI for Apple Reminders built with Swift. Create,
+              search, and manage reminders without leaving your terminal.
             </p>
             <div class="hero-actions">
-                <a href="#install" class="btn btn-primary">
-                    <i data-lucide="download" style="width: 18px; height: 18px;"></i>
-                    Install Now
-                </a>
-                <a href="https://github.com/AungMyoKyaw/apple-reminders-cli" class="btn btn-secondary" target="_blank">
-                    <i data-lucide="github" style="width: 18px; height: 18px; fill: currentColor; stroke: none;"></i>
-                    View Source
-                </a>
+              <a href="#install" class="btn btn-primary">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Install Now
+              </a>
+              <a
+                href="https://github.com/AungMyoKyaw/apple-reminders-cli"
+                class="btn btn-secondary"
+                target="_blank"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
+                  />
+                </svg>
+                View Source
+              </a>
             </div>
+          </div>
+          <div class="bento-box stat-box animate-in delay-1">
+            <div class="stat-value">100%</div>
+            <div class="stat-label">Native Swift</div>
+          </div>
+          <div class="bento-box stat-box animate-in delay-2">
+            <div class="stat-value">&lt;1ms</div>
+            <div class="stat-label">Response Time</div>
+          </div>
+        </div>
 
-            <div class="terminal-wrapper">
-                <div class="terminal">
-                    <div class="terminal-header">
-                        <div class="terminal-buttons">
-                            <span class="terminal-btn close"></span>
-                            <span class="terminal-btn min"></span>
-                            <span class="terminal-btn max"></span>
-                        </div>
-                        <span class="terminal-title">terminal — bash</span>
-                    </div>
-                    <div class="terminal-body" id="terminalBody">
-                        <div class="terminal-line delay-1">
-                            <span class="terminal-prompt">➜</span>
-                            <span class="terminal-command"><span class="typing-text">reminder create "Deploy release" --priority high --due-date tomorrow</span></span>
-                        </div>
-                        <div class="terminal-line delay-2">
-                            <span class="terminal-output">✓ Created: ☐ Deploy release #production #important</span>
-                        </div>
-                        <div class="terminal-line delay-3" style="margin-top: 0.5rem;">
-                            <span class="terminal-prompt">➜</span>
-                            <span class="terminal-command">reminder search --tag work</span>
-                        </div>
-                        <div class="terminal-line delay-4">
-                            <span class="terminal-output">☐ Fix authentication bug #work #urgent</span>
-                        </div>
-                        <div class="terminal-line delay-5">
-                            <span class="terminal-output">☐ Review PR #234 #work #review</span>
-                        </div>
-                        <div class="terminal-line delay-6">
-                            <span class="terminal-output">☑ Team standup notes #work</span>
-                        </div>
-                        <div class="terminal-line delay-7" style="margin-top: 0.5rem;">
-                            <span class="terminal-prompt">➜</span>
-                            <span class="terminal-cursor"><span class="cursor"></span></span>
-                        </div>
-                    </div>
-                </div>
+        <!-- Terminal Preview -->
+        <div class="bento-grid" style="margin-top: var(--gap)">
+          <div class="bento-box terminal-box inset animate-in delay-3">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+              </div>
+              <span class="terminal-title">terminal — bash</span>
             </div>
+            <div class="terminal-body">
+              <div class="terminal-line">
+                <span class="terminal-prompt">➜</span>
+                <span class="terminal-command"
+                  >reminder create "Deploy release" --priority high --due-date
+                  tomorrow</span
+                >
+              </div>
+              <div class="terminal-output">✓ Created: ☐ Deploy release</div>
+              <div class="terminal-line" style="margin-top: 8px">
+                <span class="terminal-prompt">➜</span>
+                <span class="terminal-command">reminder search --tag work</span>
+              </div>
+              <div class="terminal-output">
+                ☐ Fix authentication bug #work #urgent
+              </div>
+              <div class="terminal-output">☐ Review PR #234 #work #review</div>
+              <div class="terminal-output">☑ Team standup notes #work</div>
+              <div class="terminal-line" style="margin-top: 8px">
+                <span class="terminal-prompt">➜</span>
+                <span class="terminal-cursor"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Features Section -->
+        <section id="features" class="section">
+          <div class="section-header">
+            <div class="section-label">
+              <svg viewBox="0 0 24 24">
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                />
+              </svg>
+              Features
+            </div>
+            <h2 class="section-title">Everything you need</h2>
+            <p class="section-desc">
+              Complete control over your reminders with a CLI designed for power
+              users.
+            </p>
+          </div>
+
+          <div class="bento-grid bento-features">
+            <div class="bento-box feature-box large">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                  />
+                  <path
+                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                  />
+                </svg>
+              </div>
+              <h3>Complete Management</h3>
+              <p>
+                Create, update, complete, and delete reminders with simple
+                commands. Full CRUD operations at your fingertips.
+              </p>
+            </div>
+            <div class="bento-box feature-box">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              </div>
+              <h3>Advanced Search</h3>
+              <p>Filter by priority, dates, tags, URLs, and alarms.</p>
+            </div>
+            <div class="bento-box feature-box">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24">
+                  <path
+                    d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"
+                  />
+                  <line x1="7" y1="7" x2="7.01" y2="7" />
+                </svg>
+              </div>
+              <h3>Tag System</h3>
+              <p>Organize with #hashtags that sync across devices.</p>
+            </div>
+            <div class="bento-box feature-box">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24">
+                  <line x1="8" y1="6" x2="21" y2="6" />
+                  <line x1="8" y1="12" x2="21" y2="12" />
+                  <line x1="8" y1="18" x2="21" y2="18" />
+                  <line x1="3" y1="6" x2="3.01" y2="6" />
+                  <line x1="3" y1="12" x2="3.01" y2="12" />
+                  <line x1="3" y1="18" x2="3.01" y2="18" />
+                </svg>
+              </div>
+              <h3>List Management</h3>
+              <p>Create and organize reminder lists for different contexts.</p>
+            </div>
+            <div class="bento-box feature-box">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24">
+                  <polyline points="4 17 10 11 4 5" />
+                  <line x1="12" y1="19" x2="20" y2="19" />
+                </svg>
+              </div>
+              <h3>JSON Output</h3>
+              <p>Machine-readable output for automation with jq.</p>
+            </div>
+            <div class="bento-box feature-box">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24">
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+              </div>
+              <h3>Statistics</h3>
+              <p>Track productivity metrics and completion rates.</p>
+            </div>
+          </div>
         </section>
 
-        <section id="features">
-            <div class="section-header reveal">
-                <span class="section-label">
-                    <i data-lucide="star"></i>
-                    Features
-                </span>
-                <h2 class="section-title">Everything you need</h2>
-                <p class="section-desc">Complete control over your reminders with a CLI designed for power users.</p>
+        <!-- Comparison Section -->
+        <section id="comparison" class="section">
+          <div class="section-header">
+            <div class="section-label">
+              <svg viewBox="0 0 24 24">
+                <path d="M3 3v18h18" />
+                <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
+              </svg>
+              Comparison
             </div>
+            <h2 class="section-title">CLI vs Reminders App</h2>
+            <p class="section-desc">Why choose the terminal over the GUI?</p>
+          </div>
 
-            <div class="features-grid reveal-stagger">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i data-lucide="edit-3"></i>
-                    </div>
-                    <h3>Complete Management</h3>
-                    <p>Create, update, complete, and delete reminders with simple commands.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i data-lucide="list"></i>
-                    </div>
-                    <h3>List Management</h3>
-                    <p>Create, rename, and organize reminder lists for different contexts.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i data-lucide="search"></i>
-                    </div>
-                    <h3>Advanced Search</h3>
-                    <p>Filter by priority, dates, tags, URLs, alarms, and more.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i data-lucide="tag"></i>
-                    </div>
-                    <h3>Tag System</h3>
-                    <p>Organize with hashtags like #work #urgent that sync across Apple devices.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i data-lucide="file-json"></i>
-                    </div>
-                    <h3>JSON Output</h3>
-                    <p>Machine-readable output for automation and scripting with jq.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i data-lucide="bar-chart-3"></i>
-                    </div>
-                    <h3>Statistics</h3>
-                    <p>Track productivity metrics and completion rates over time.</p>
-                </div>
+          <div class="bento-grid comparison-grid">
+            <div class="bento-box comparison-table-box">
+              <div class="comparison-row header">
+                <span>Feature</span>
+                <span>CLI</span>
+                <span>App</span>
+              </div>
+              <div class="comparison-row">
+                <span>Lightning-fast creation</span>
+                <span class="comparison-check">✓</span>
+                <span class="comparison-cross">✗</span>
+              </div>
+              <div class="comparison-row">
+                <span>JSON/automation support</span>
+                <span class="comparison-check">✓</span>
+                <span class="comparison-cross">✗</span>
+              </div>
+              <div class="comparison-row">
+                <span>Scriptable workflows</span>
+                <span class="comparison-check">✓</span>
+                <span class="comparison-cross">✗</span>
+              </div>
+              <div class="comparison-row">
+                <span>Bulk operations</span>
+                <span class="comparison-check">✓</span>
+                <span class="comparison-cross">✗</span>
+              </div>
+              <div class="comparison-row">
+                <span>Advanced search filters</span>
+                <span class="comparison-check">✓</span>
+                <span class="comparison-cross">✗</span>
+              </div>
+              <div class="comparison-row">
+                <span>iCloud sync</span>
+                <span class="comparison-check">✓</span>
+                <span class="comparison-check">✓</span>
+              </div>
             </div>
+            <div class="bento-box why-box accent-border">
+              <h3>Built for developers</h3>
+              <ul class="why-list">
+                <li>Integrate with shell scripts</li>
+                <li>Pipe output to other tools</li>
+                <li>Automate with cron jobs</li>
+                <li>Version control your workflows</li>
+              </ul>
+            </div>
+          </div>
         </section>
 
-        <section id="comparison">
-            <div class="section-header reveal">
-                <span class="section-label">
-                    <i data-lucide="scale"></i>
-                    Comparison
-                </span>
-                <h2 class="section-title">CLI vs Reminders App</h2>
-                <p class="section-desc">Why choose the terminal over the GUI?</p>
+        <!-- Install Section -->
+        <section id="install" class="section">
+          <div class="section-header">
+            <div class="section-label">
+              <svg viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Installation
             </div>
+            <h2 class="section-title">Get started</h2>
+            <p class="section-desc">
+              Choose your preferred installation method.
+            </p>
+          </div>
 
-            <div class="comparison-table reveal">
-                <div class="comparison-row header">
-                    <span>Feature</span>
-                    <span>Reminder CLI</span>
-                    <span>Reminders App</span>
-                </div>
-                <div class="comparison-row">
-                    <span class="comparison-feature">Lightning-fast creation</span>
-                    <span class="comparison-check">✓</span>
-                    <span class="comparison-cross">✗</span>
-                </div>
-                <div class="comparison-row">
-                    <span class="comparison-feature">JSON/automation support</span>
-                    <span class="comparison-check">✓</span>
-                    <span class="comparison-cross">✗</span>
-                </div>
-                <div class="comparison-row">
-                    <span class="comparison-feature">Scriptable workflows</span>
-                    <span class="comparison-check">✓</span>
-                    <span class="comparison-cross">✗</span>
-                </div>
-                <div class="comparison-row">
-                    <span class="comparison-feature">Bulk operations</span>
-                    <span class="comparison-check">✓</span>
-                    <span class="comparison-cross">✗</span>
-                </div>
-                <div class="comparison-row">
-                    <span class="comparison-feature">Advanced search filters</span>
-                    <span class="comparison-check">✓</span>
-                    <span class="comparison-cross">✗</span>
-                </div>
-                <div class="comparison-row">
-                    <span class="comparison-feature">iCloud sync</span>
-                    <span class="comparison-check">✓</span>
-                    <span class="comparison-check">✓</span>
-                </div>
-                <div class="comparison-row">
-                    <span class="comparison-feature">Location-based reminders</span>
-                    <span class="comparison-check">✓</span>
-                    <span class="comparison-check">✓</span>
-                </div>
-            </div>
-        </section>
-
-        <section id="use-cases">
-            <div class="section-header reveal">
-                <span class="section-label">
-                    <i data-lucide="zap"></i>
-                    Use Cases
-                </span>
-                <h2 class="section-title">Built for power users</h2>
-                <p class="section-desc">Real-world scenarios where the CLI shines.</p>
-            </div>
-
-            <div class="use-cases-grid reveal-stagger">
-                <div class="use-case-card">
-                    <div class="use-case-icon">
-                        <i data-lucide="terminal"></i>
-                    </div>
-                    <h4>Developer Workflow</h4>
-                    <p>Create tasks from Jira tickets, sync with GitHub PRs, and manage sprint backlog without leaving your terminal.</p>
-                </div>
-
-                <div class="use-case-card">
-                    <div class="use-case-icon">
-                        <i data-lucide="bolt"></i>
-                    </div>
-                    <h4>Quick Capture</h4>
-                    <p>Type a reminder faster than unlocking your phone and opening the Reminders app.</p>
-                </div>
-
-                <div class="use-case-card">
-                    <div class="use-case-icon">
-                        <i data-lucide="cog"></i>
-                    </div>
-                    <h4>Automation</h4>
-                    <p>Integrate with shell scripts, cron jobs, and other CLI tools for automated task management.</p>
-                </div>
-
-                <div class="use-case-card">
-                    <div class="use-case-icon">
-                        <i data-lucide="trending-up"></i>
-                    </div>
-                    <h4>Productivity Tracking</h4>
-                    <p>Use JSON output to build custom dashboards and track completion rates over time.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="install" class="install-section">
-            <div class="section-header reveal">
-                <span class="section-label">
-                    <i data-lucide="download"></i>
-                    Installation
-                </span>
-                <h2 class="section-title">Get started in seconds</h2>
-                <p class="section-desc">Choose your preferred installation method.</p>
-            </div>
-
-            <div class="install-tabs reveal">
-                <button class="install-tab active" data-tab="homebrew">Homebrew</button>
-                <button class="install-tab" data-tab="source">Build from Source</button>
+          <div class="bento-box install-box">
+            <div class="install-tabs">
+              <button class="install-tab active" data-tab="homebrew">
+                Homebrew
+              </button>
+              <button class="install-tab" data-tab="source">
+                Build from Source
+              </button>
             </div>
 
             <div class="install-content active" id="homebrew">
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">
-                            <i data-lucide="terminal" style="width: 14px; height: 14px;"></i>
-                            bash
-                        </span>
-                        <button class="copy-btn" onclick="copyCode(this)">
-                            <i data-lucide="copy"></i>
-                            <span>Copy</span>
-                        </button>
-                    </div>
-                    <div class="code-body">
-                        <code>brew tap AungMyoKyaw/homebrew-tap && brew install AungMyoKyaw/homebrew-tap/reminder</code>
-                    </div>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">bash</span>
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg viewBox="0 0 24 24">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path
+                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                      />
+                    </svg>
+                    Copy
+                  </button>
                 </div>
+                <div class="code-body">
+                  <code
+                    >brew tap AungMyoKyaw/homebrew-tap && brew install
+                    reminder</code
+                  >
+                </div>
+              </div>
             </div>
 
             <div class="install-content" id="source">
-                <div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">
-                            <i data-lucide="terminal" style="width: 14px; height: 14px;"></i>
-                            bash
-                        </span>
-                        <button class="copy-btn" onclick="copyCode(this)">
-                            <i data-lucide="copy"></i>
-                            <span>Copy</span>
-                        </button>
-                    </div>
-                    <div class="code-body">
-                        <code><span class="code-comment"># Clone and build</span>
+              <div class="code-block">
+                <div class="code-header">
+                  <span class="code-lang">bash</span>
+                  <button class="copy-btn" onclick="copyCode(this)">
+                    <svg viewBox="0 0 24 24">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path
+                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                      />
+                    </svg>
+                    Copy
+                  </button>
+                </div>
+                <div class="code-body">
+                  <pre><code><span class="code-comment"># Clone and build</span>
 git clone https://github.com/AungMyoKyaw/apple-reminders-cli.git
 cd apple-reminders-cli
-./install.sh</code>
-                    </div>
+./install.sh</code></pre>
                 </div>
+              </div>
             </div>
 
-            <p style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.875rem;" class="reveal">
-                <span style="color: var(--accent-orange);">⚠️</span> On first run, grant Calendar/Reminders permissions in<br>
-                <strong>System Settings → Privacy & Security → Calendars</strong>
+            <div class="install-note">
+              <strong>Note:</strong> On first run, grant permissions in System
+              Settings → Privacy & Security → Calendars
+            </div>
+          </div>
+        </section>
+
+        <!-- Examples Section -->
+        <section id="examples" class="section">
+          <div class="section-header">
+            <div class="section-label">
+              <svg viewBox="0 0 24 24">
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg>
+              Usage
+            </div>
+            <h2 class="section-title">Common commands</h2>
+            <p class="section-desc">
+              Get productive immediately with these essential commands.
             </p>
+          </div>
+
+          <div class="bento-grid bento-examples">
+            <div class="bento-box example-box">
+              <div class="example-header">command</div>
+              <div class="example-body">
+                <div class="example-command">reminder list</div>
+                <div class="example-desc">List all reminders</div>
+              </div>
+            </div>
+            <div class="bento-box example-box wide">
+              <div class="example-header">command</div>
+              <div class="example-body">
+                <div class="example-command">
+                  reminder create "Buy groceries" --due-date tomorrow
+                </div>
+                <div class="example-desc">Create with due date</div>
+              </div>
+            </div>
+            <div class="bento-box example-box">
+              <div class="example-header">command</div>
+              <div class="example-body">
+                <div class="example-command">reminder stats</div>
+                <div class="example-desc">View productivity stats</div>
+              </div>
+            </div>
+            <div class="bento-box example-box wide">
+              <div class="example-header">command</div>
+              <div class="example-body">
+                <div class="example-command">
+                  reminder create "Fix bug #work #urgent" --priority high
+                </div>
+                <div class="example-desc">Create with tags & priority</div>
+              </div>
+            </div>
+            <div class="bento-box example-box">
+              <div class="example-header">command</div>
+              <div class="example-body">
+                <div class="example-command">
+                  reminder complete "Buy groceries"
+                </div>
+                <div class="example-desc">Mark as complete</div>
+              </div>
+            </div>
+            <div class="bento-box example-box">
+              <div class="example-header">command</div>
+              <div class="example-body">
+                <div class="example-command">reminder search --tag work</div>
+                <div class="example-desc">Search by tag</div>
+              </div>
+            </div>
+            <div class="bento-box example-box wide">
+              <div class="example-header">command</div>
+              <div class="example-body">
+                <div class="example-command">
+                  reminder list --json | jq '.[0].title'
+                </div>
+                <div class="example-desc">JSON output with jq</div>
+              </div>
+            </div>
+          </div>
         </section>
 
-        <section id="examples">
-            <div class="section-header reveal">
-                <span class="section-label">
-                    <i data-lucide="code-2"></i>
-                    Usage
-                </span>
-                <h2 class="section-title">Common commands</h2>
-                <p class="section-desc">Get productive immediately with these essential commands.</p>
+        <!-- Shortcuts Section -->
+        <section class="section">
+          <div class="section-header">
+            <div class="section-label">
+              <svg viewBox="0 0 24 24">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path
+                  d="M6 8h.001M10 8h.001M14 8h.001M18 8h.001M8 12h.001M12 12h.001M16 12h.001M8 16h8"
+                />
+              </svg>
+              Shortcuts
             </div>
+            <h2 class="section-title">Work faster</h2>
+            <p class="section-desc">
+              Priority and date shortcuts for power users.
+            </p>
+          </div>
 
-            <div class="examples-grid reveal-stagger">
-                <div class="example-card">
-                    <div class="example-header">
-                        <span>bash</span>
-                    </div>
-                    <div class="example-body">
-                        <div class="example-command">reminder list</div>
-                        <div class="example-desc">List all reminders</div>
-                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
-                    </div>
-                </div>
-
-                <div class="example-card">
-                    <div class="example-header">
-                        <span>bash</span>
-                    </div>
-                    <div class="example-body">
-                        <div class="example-command">reminder create "Buy groceries" --due-date tomorrow</div>
-                        <div class="example-desc">Create with due date</div>
-                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
-                    </div>
-                </div>
-
-                <div class="example-card">
-                    <div class="example-header">
-                        <span>bash</span>
-                    </div>
-                    <div class="example-body">
-                        <div class="example-command">reminder create "Fix bug #work #urgent" --priority high</div>
-                        <div class="example-desc">Create with tags & priority</div>
-                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
-                    </div>
-                </div>
-
-                <div class="example-card">
-                    <div class="example-header">
-                        <span>bash</span>
-                    </div>
-                    <div class="example-body">
-                        <div class="example-command">reminder complete "Buy groceries"</div>
-                        <div class="example-desc">Mark as complete</div>
-                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
-                    </div>
-                </div>
-
-                <div class="example-card">
-                    <div class="example-header">
-                        <span>bash</span>
-                    </div>
-                    <div class="example-body">
-                        <div class="example-command">reminder search --tag work</div>
-                        <div class="example-desc">Search by tag</div>
-                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
-                    </div>
-                </div>
-
-                <div class="example-card">
-                    <div class="example-header">
-                        <span>bash</span>
-                    </div>
-                    <div class="example-body">
-                        <div class="example-command">reminder list --json | jq '.[0].title'</div>
-                        <div class="example-desc">JSON output with jq</div>
-                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
-                    </div>
-                </div>
-
-                <div class="example-card">
-                    <div class="example-header">
-                        <span>bash</span>
-                    </div>
-                    <div class="example-body">
-                        <div class="example-command">reminder stats</div>
-                        <div class="example-desc">View productivity stats</div>
-                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
-                    </div>
-                </div>
-
-                <div class="example-card">
-                    <div class="example-header">
-                        <span>bash</span>
-                    </div>
-                    <div class="example-body">
-                        <div class="example-command">reminder create-list "New Project"</div>
-                        <div class="example-desc">Create new list</div>
-                        <button class="quick-copy-btn" onclick="copyExample(this)">Copy</button>
-                    </div>
-                </div>
+          <div class="bento-grid bento-shortcuts">
+            <div class="bento-box shortcut-box">
+              <div class="shortcut-keys">
+                <span class="key">--priority high</span>
+              </div>
+              <span class="shortcut-label">High Priority</span>
             </div>
+            <div class="bento-box shortcut-box">
+              <div class="shortcut-keys">
+                <span class="key">--priority medium</span>
+              </div>
+              <span class="shortcut-label">Medium Priority</span>
+            </div>
+            <div class="bento-box shortcut-box">
+              <div class="shortcut-keys">
+                <span class="key">--priority low</span>
+              </div>
+              <span class="shortcut-label">Low Priority</span>
+            </div>
+            <div class="bento-box shortcut-box">
+              <div class="shortcut-keys">
+                <span class="key">--due-date today</span>
+              </div>
+              <span class="shortcut-label">Due Today</span>
+            </div>
+            <div class="bento-box shortcut-box">
+              <div class="shortcut-keys">
+                <span class="key">--due-date tomorrow</span>
+              </div>
+              <span class="shortcut-label">Due Tomorrow</span>
+            </div>
+            <div class="bento-box shortcut-box">
+              <div class="shortcut-keys">
+                <span class="key">--due-date "in 3d"</span>
+              </div>
+              <span class="shortcut-label">Relative Dates</span>
+            </div>
+            <div class="bento-box shortcut-box">
+              <div class="shortcut-keys">
+                <span class="key">--json</span>
+              </div>
+              <span class="shortcut-label">JSON Output</span>
+            </div>
+            <div class="bento-box shortcut-box">
+              <div class="shortcut-keys">
+                <span class="key">--help</span>
+              </div>
+              <span class="shortcut-label">Get Help</span>
+            </div>
+          </div>
         </section>
 
-        <section id="shortcuts">
-            <div class="section-header reveal">
-                <span class="section-label">
-                    <i data-lucide="keyboard"></i>
-                    Keyboard Shortcuts
-                </span>
-                <h2 class="section-title">Work faster</h2>
-                <p class="section-desc">Priority shortcuts for power users.</p>
+        <!-- Priority Reference -->
+        <section class="section">
+          <div class="section-header">
+            <div class="section-label">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              Reference
             </div>
+            <h2 class="section-title">Priority levels</h2>
+            <p class="section-desc">
+              Quick reference for priority symbols and values.
+            </p>
+          </div>
 
-            <div class="shortcuts-grid reveal">
-                <div class="shortcut-card">
-                    <span class="shortcut-action">High Priority</span>
-                    <div class="shortcut-keys">
-                        <span class="key">h</span>
-                        <span class="key">1-4</span>
-                    </div>
-                </div>
-
-                <div class="shortcut-card">
-                    <span class="shortcut-action">Medium Priority</span>
-                    <div class="shortcut-keys">
-                        <span class="key">m</span>
-                        <span class="key">5</span>
-                    </div>
-                </div>
-
-                <div class="shortcut-card">
-                    <span class="shortcut-action">Low Priority</span>
-                    <div class="shortcut-keys">
-                        <span class="key">l</span>
-                        <span class="key">6-9</span>
-                    </div>
-                </div>
-
-                <div class="shortcut-card">
-                    <span class="shortcut-action">No Priority</span>
-                    <div class="shortcut-keys">
-                        <span class="key">n</span>
-                        <span class="key">0</span>
-                    </div>
-                </div>
-
-                <div class="shortcut-card">
-                    <span class="shortcut-action">Today</span>
-                    <div class="shortcut-keys">
-                        <span class="key">today</span>
-                    </div>
-                </div>
-
-                <div class="shortcut-card">
-                    <span class="shortcut-action">Tomorrow</span>
-                    <div class="shortcut-keys">
-                        <span class="key">tomorrow</span>
-                    </div>
-                </div>
-
-                <div class="shortcut-card">
-                    <span class="shortcut-action">Relative Dates</span>
-                    <div class="shortcut-keys">
-                        <span class="key">in 3d</span>
-                    </div>
-                </div>
-
-                <div class="shortcut-card">
-                    <span class="shortcut-action">Help</span>
-                    <div class="shortcut-keys">
-                        <span class="key">--help</span>
-                        <span class="key">-h</span>
-                    </div>
-                </div>
+          <div class="bento-grid priority-grid">
+            <div class="bento-box priority-box accent-border">
+              <div class="priority-symbol">!!!</div>
+              <div class="priority-name">High</div>
+              <div class="priority-values">1-4</div>
             </div>
+            <div class="bento-box priority-box">
+              <div class="priority-symbol">!!</div>
+              <div class="priority-name">Medium</div>
+              <div class="priority-values">5</div>
+            </div>
+            <div class="bento-box priority-box">
+              <div class="priority-symbol">!</div>
+              <div class="priority-name">Low</div>
+              <div class="priority-values">6-9</div>
+            </div>
+            <div class="bento-box priority-box">
+              <div class="priority-symbol">—</div>
+              <div class="priority-name">None</div>
+              <div class="priority-values">0</div>
+            </div>
+          </div>
         </section>
 
-        <section>
-            <div class="section-header reveal">
-                <span class="section-label">
-                    <i data-lucide="info"></i>
-                    Reference
-                </span>
-                <h2 class="section-title">Priority levels</h2>
-                <p class="section-desc">Quick reference for priority symbols and values.</p>
+        <!-- Built With -->
+        <section class="section">
+          <div class="section-header">
+            <div class="section-label">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"
+                />
+              </svg>
+              Built With
             </div>
+            <h2 class="section-title">Native & powerful</h2>
+            <p class="section-desc">
+              Built with Apple's own technologies for seamless integration.
+            </p>
+          </div>
 
-            <div class="priority-table reveal">
-                <div class="priority-row header">
-                    <span>Priority</span>
-                    <span>Symbol</span>
-                    <span>Values</span>
-                </div>
-                <div class="priority-row">
-                    <span>High</span>
-                    <span class="priority-symbol">!!!</span>
-                    <span>1-4</span>
-                </div>
-                <div class="priority-row">
-                    <span>Medium</span>
-                    <span class="priority-symbol">!!</span>
-                    <span>5</span>
-                </div>
-                <div class="priority-row">
-                    <span>Low</span>
-                    <span class="priority-symbol">!</span>
-                    <span>6-9</span>
-                </div>
-                <div class="priority-row">
-                    <span>None</span>
-                    <span class="priority-symbol">—</span>
-                    <span>0</span>
-                </div>
+          <div class="bento-grid built-grid">
+            <div class="bento-box built-box">
+              <div class="built-icon">
+                <svg viewBox="0 0 24 24">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                  <polyline points="2 17 12 22 22 17" />
+                  <polyline points="2 12 12 17 22 12" />
+                </svg>
+              </div>
+              <div class="built-name">Swift</div>
+              <div class="built-desc">Native performance</div>
             </div>
+            <div class="bento-box built-box">
+              <div class="built-icon">
+                <svg viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              </div>
+              <div class="built-name">EventKit</div>
+              <div class="built-desc">Apple's framework</div>
+            </div>
+            <div class="bento-box built-box">
+              <div class="built-icon">
+                <svg viewBox="0 0 24 24">
+                  <polyline points="4 17 10 11 4 5" />
+                  <line x1="12" y1="19" x2="20" y2="19" />
+                </svg>
+              </div>
+              <div class="built-name">ArgumentParser</div>
+              <div class="built-desc">CLI framework</div>
+            </div>
+          </div>
         </section>
+      </main>
 
-        <section>
-            <div class="section-header reveal">
-                <span class="section-label">
-                    <i data-lucide="wrench"></i>
-                    Built With
-                </span>
-                <h2 class="section-title">Native & powerful</h2>
-                <p class="section-desc">Built with Apple's own technologies for seamless integration.</p>
+      <footer>
+        <div class="footer-content">
+          <a href="#" class="logo">
+            <div class="logo-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"
+                />
+              </svg>
             </div>
-
-            <div style="display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;" class="reveal">
-                <div style="text-align: center;">
-                    <div style="width: 64px; height: 64px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                        <i data-lucide="layers" style="width: 32px; height: 32px; stroke: var(--accent-orange);"></i>
-                    </div>
-                    <div style="font-weight: 600;">Swift</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="width: 64px; height: 64px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                        <i data-lucide="calendar" style="width: 32px; height: 32px; stroke: var(--accent-purple);"></i>
-                    </div>
-                    <div style="font-weight: 600;">EventKit</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="width: 64px; height: 64px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                        <i data-lucide="box" style="width: 32px; height: 32px; stroke: var(--accent-cyan);"></i>
-                    </div>
-                    <div style="font-weight: 600;">ArgumentParser</div>
-                </div>
-            </div>
-        </section>
+            reminder
+          </a>
+          <ul class="footer-links">
+            <li>
+              <a
+                href="https://github.com/AungMyoKyaw/apple-reminders-cli"
+                target="_blank"
+                >GitHub</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://github.com/AungMyoKyaw/apple-reminders-cli/issues"
+                target="_blank"
+                >Issues</a
+              >
+            </li>
+            <li>
+              <a
+                href="https://github.com/AungMyoKyaw/apple-reminders-cli/blob/master/README.md"
+                target="_blank"
+                >Documentation</a
+              >
+            </li>
+          </ul>
+          <p class="footer-text">
+            Built with Swift for macOS. Free and open source under MIT license.
+          </p>
+        </div>
+      </footer>
     </div>
 
-    <footer>
-        <div class="footer-content">
-            <div class="logo">
-                <div class="logo-icon">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                    </svg>
-                </div>
-                reminder
-            </div>
-            <ul class="footer-links">
-                <li><a href="https://github.com/AungMyoKyaw/apple-reminders-cli" target="_blank">GitHub</a></li>
-                <li><a href="https://github.com/AungMyoKyaw/apple-reminders-cli/issues" target="_blank">Issues</a></li>
-                <li><a href="https://github.com/AungMyoKyaw/apple-reminders-cli/blob/master/README.md" target="_blank">Documentation</a></li>
-                <li><a href="https://github.com/AungMyoKyaw/apple-reminders-cli/stargazers" target="_blank">Star ⭐</a></li>
-            </ul>
-            <p class="footer-text">Built with Swift for macOS. Free and open source under MIT license.</p>
-        </div>
-    </footer>
-
     <script>
-        // Scroll Progress Bar
-        const scrollProgress = document.getElementById('scrollProgress');
-        window.addEventListener('scroll', () => {
-            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const progress = (scrollTop / scrollHeight) * 100;
-            scrollProgress.style.width = progress + '%';
+      // Mobile menu toggle
+      const mobileMenuBtn = document.querySelector(".mobile-menu-btn");
+      const navLinks = document.querySelector(".nav-links");
+
+      mobileMenuBtn.addEventListener("click", () => {
+        navLinks.classList.toggle("active");
+      });
+
+      // Close menu when clicking a link
+      document.querySelectorAll(".nav-links a").forEach((link) => {
+        link.addEventListener("click", () => {
+          navLinks.classList.remove("active");
         });
+      });
 
-        // Back to Top Button
-        const backToTop = document.getElementById('backToTop');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 500) {
-                backToTop.classList.add('visible');
-            } else {
-                backToTop.classList.remove('visible');
-            }
-        });
-
-        backToTop.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        // Scroll Reveal Animations (Intersection Observer)
-        const revealElements = document.querySelectorAll('.reveal, .reveal-stagger');
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.1
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, observerOptions);
-
-        revealElements.forEach(el => observer.observe(el));
-
-        // Mobile menu toggle
-        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-        const navLinks = document.querySelector('.nav-links');
-
-        mobileMenuBtn.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            const isOpen = navLinks.classList.contains('active');
-            mobileMenuBtn.setAttribute('aria-expanded', isOpen);
-        });
-
-        // Close mobile menu when clicking a link
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('active');
-                mobileMenuBtn.setAttribute('aria-expanded', 'false');
-            });
-        });
-
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('nav')) {
-                navLinks.classList.remove('active');
-                mobileMenuBtn.setAttribute('aria-expanded', 'false');
-            }
-        });
-
-        // Tab switching
-        document.querySelectorAll('.install-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.install-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.install-content').forEach(c => c.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(tab.dataset.tab).classList.add('active');
-            });
-        });
-
-        // Copy code function
-        function copyCode(btn) {
-            const code = btn.closest('.code-block').querySelector('code').textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                const icon = btn.querySelector('i');
-                const text = btn.querySelector('span');
-                icon.setAttribute('data-lucide', 'check');
-                text.textContent = 'Copied!';
-                btn.classList.add('copied');
-                lucide.createIcons();
-                setTimeout(() => {
-                    icon.setAttribute('data-lucide', 'copy');
-                    text.textContent = 'Copy';
-                    btn.classList.remove('copied');
-                    lucide.createIcons();
-                }, 2000);
-            });
+      // Close menu when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest("nav")) {
+          navLinks.classList.remove("active");
         }
+      });
 
-        // Copy example command
-        function copyExample(btn) {
-            const command = btn.closest('.example-body').querySelector('.example-command').textContent;
-            navigator.clipboard.writeText(command).then(() => {
-                const originalText = btn.textContent;
-                btn.classList.add('copied');
-                btn.textContent = 'Copied!';
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.classList.remove('copied');
-                }, 2000);
-            });
-        }
-
-        // Smooth scroll for nav links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
+      // Tab switching
+      document.querySelectorAll(".install-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          document
+            .querySelectorAll(".install-tab")
+            .forEach((t) => t.classList.remove("active"));
+          document
+            .querySelectorAll(".install-content")
+            .forEach((c) => c.classList.remove("active"));
+          tab.classList.add("active");
+          document.getElementById(tab.dataset.tab).classList.add("active");
         });
+      });
 
-        // Initialize Lucide icons
-        lucide.createIcons();
+      // Copy code
+      function copyCode(btn) {
+        const code = btn
+          .closest(".code-block")
+          .querySelector("code").textContent;
+        navigator.clipboard.writeText(code).then(() => {
+          const originalText = btn.innerHTML;
+          btn.innerHTML =
+            '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+          btn.classList.add("copied");
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove("copied");
+          }, 2000);
+        });
+      }
+
+      // Smooth scroll
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        });
+      });
+
+      // Intersection Observer for scroll animations
+      const observerOptions = {
+        root: null,
+        rootMargin: "0px",
+        threshold: 0.1
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = "1";
+            entry.target.style.transform = "translateY(0)";
+          }
+        });
+      }, observerOptions);
+
+      document.querySelectorAll(".bento-box").forEach((box) => {
+        box.style.opacity = "0";
+        box.style.transform = "translateY(20px)";
+        box.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+        observer.observe(box);
+      });
     </script>
-</body>
+  </body>
 </html>
