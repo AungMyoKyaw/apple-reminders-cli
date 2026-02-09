@@ -16,6 +16,7 @@ struct ReminderEntry: Codable {
     let url: String?
     let creationDate: String?
     let lastModifiedDate: String?
+    let completionDate: String?
 }
 
 class ReminderStore {
@@ -177,7 +178,8 @@ struct ReminderCLI: ParsableCommand {
                         list: r.calendar?.title ?? "Unknown",
                         url: r.url?.absoluteString,
                         creationDate: r.creationDate.flatMap { isoFormatter.string(from: $0) },
-                        lastModifiedDate: r.lastModifiedDate.flatMap { isoFormatter.string(from: $0) }
+                        lastModifiedDate: r.lastModifiedDate.flatMap { isoFormatter.string(from: $0) },
+                        completionDate: r.completionDate.flatMap { isoFormatter.string(from: $0) }
                     )
                 }
                 let encoder = JSONEncoder()
@@ -438,7 +440,8 @@ struct ReminderCLI: ParsableCommand {
                     list: reminder.calendar?.title ?? "Unknown",
                     url: reminder.url?.absoluteString,
                     creationDate: reminder.creationDate.flatMap { isoFormatter.string(from: $0) },
-                    lastModifiedDate: reminder.lastModifiedDate.flatMap { isoFormatter.string(from: $0) }
+                    lastModifiedDate: reminder.lastModifiedDate.flatMap { isoFormatter.string(from: $0) },
+                    completionDate: reminder.completionDate.flatMap { isoFormatter.string(from: $0) }
                 )
                 let encoder = JSONEncoder()
                 encoder.outputFormatting = .prettyPrinted
@@ -572,6 +575,12 @@ struct ReminderCLI: ParsableCommand {
         @Option(name: .long, help: "Due after this date")
         var dueAfter: String?
 
+        @Option(name: .long, help: "Completed after this date")
+        var completedAfter: String?
+
+        @Option(name: .long, help: "Completed before this date")
+        var completedBefore: String?
+
         @Flag(name: .long, help: "Show only overdue reminders")
         var overdue = false
 
@@ -660,6 +669,14 @@ struct ReminderCLI: ParsableCommand {
                 filtered = filtered.filter { $0.dueDateComponents?.date ?? .distantPast > date }
             }
 
+            if let completedAfterStr = completedAfter, let date = DateParser.parse(completedAfterStr) {
+                filtered = filtered.filter { $0.completionDate ?? .distantPast > date }
+            }
+
+            if let completedBeforeStr = completedBefore, let date = DateParser.parse(completedBeforeStr) {
+                filtered = filtered.filter { $0.completionDate ?? .distantFuture < date }
+            }
+
             if json {
                 let isoFormatter = ISO8601DateFormatter()
                 let entries = filtered.map { r in
@@ -673,7 +690,8 @@ struct ReminderCLI: ParsableCommand {
                         list: r.calendar?.title ?? "Unknown",
                         url: r.url?.absoluteString,
                         creationDate: r.creationDate.flatMap { isoFormatter.string(from: $0) },
-                        lastModifiedDate: r.lastModifiedDate.flatMap { isoFormatter.string(from: $0) }
+                        lastModifiedDate: r.lastModifiedDate.flatMap { isoFormatter.string(from: $0) },
+                        completionDate: r.completionDate.flatMap { isoFormatter.string(from: $0) }
                     )
                 }
                 let encoder = JSONEncoder()
