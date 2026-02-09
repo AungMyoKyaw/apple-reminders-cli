@@ -5,10 +5,10 @@ A powerful command-line interface for Apple Reminders built with Swift and Event
 ## Features
 
 - **Complete Reminder Management** - Create, update, complete, delete reminders
-- **List Management** - Create, rename, delete reminder lists
+- **List Management** - Filter reminders by list
 - **Advanced Search** - Filter by priority, dates, tags, URLs, alarms
 - **JSON Output** - Machine-readable output for automation and scripting
-- **Enhanced Features** - Tags, subtasks, recurring reminders, location alerts
+- **Enhanced Features** - Tags, notes, URLs, and notifications
 - **Statistics** - Track productivity metrics and completion rates
 - **Priority Management** - High/Medium/Low priority levels
 - **Date Support** - Flexible date parsing (natural language, ISO, relative)
@@ -106,9 +106,6 @@ reminder --help
 # Show command-specific help
 reminder create --help
 reminder search --help
-reminder add-tag --help
-reminder list-tags --help
-
 # Get help for any command
 reminder help <command>
 ```
@@ -140,9 +137,9 @@ reminder --help
 
 ### List Reminders
 ```bash
-reminder list --show-priority --show-dates
+reminder list
+reminder list Work
 reminder list --priority high --uncompleted-only
-reminder list --list-name Work
 ```
 
 ### Create Reminders
@@ -169,18 +166,11 @@ reminder create "Fix bug #work #urgent #backend" --due-date today
 reminder create "Deploy release #production #important" --priority high --due-date tomorrow
 ```
 
-**Managing tags:**
+**Searching by tag:**
 ```bash
-# Add a tag to an existing reminder
-reminder add-tag "Buy milk #shopping" review
-
 # Search reminders by tag
 reminder search --tag work
 reminder search --tag shopping --list-name Work
-
-# List all tags in use
-reminder list-tags
-reminder list-tags --list-name Work
 ```
 
 **Tag Format:**
@@ -209,12 +199,6 @@ reminder show "task" --json
 ```bash
 reminder search "meeting" --priority high
 reminder stats
-```
-
-### List Management
-```bash
-reminder lists
-reminder create-list "New Project"
 ```
 
 ## Reference
