@@ -208,6 +208,8 @@ reminder show "task" --json
 ### Search & Stats
 ```bash
 reminder search "meeting" --priority high
+reminder search --completed --completed-after 2026-02-01
+reminder search --completed --completed-before 2026-02-09 --json
 reminder stats
 ```
 
