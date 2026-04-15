@@ -319,3 +319,9 @@ docker-compose.override.yml
 # Local overrides
 *.local.*
 local.*
+
+# Speckit tooling (keep specs/ and constitution tracked)
+.specify/*
+!.specify/memory/
+.specify/memory/*
+!.specify/memory/constitution.md
