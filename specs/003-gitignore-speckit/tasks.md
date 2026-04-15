@@ -5,9 +5,9 @@
 
 ## Phase 1: Implement
 
-- [ ] T001 Add speckit section to `.gitignore` with negation rules for constitution
-- [ ] T002 Verify `git status` — `.specify/` tooling ignored, `specs/` and constitution trackable
+- [x] T001 Add speckit section to `.gitignore` with negation rules for constitution
+- [x] T002 Verify `git status` — `.specify/` tooling ignored, `specs/` and constitution trackable
 
 ## Phase 2: Commit
 
-- [ ] T003 Stage and commit `.gitignore`, `specs/`, `.specify/memory/constitution.md`
+- [x] T003 Stage and commit `.gitignore`, `specs/`, `.specify/memory/constitution.md`
